@@ -1,0 +1,11 @@
+packages:
+  - 'plugins/*'
+
+nodeLinker: hoisted
+autoInstallPeers: false
+confirmModulesPurge: false
+
+# Do not execute dependency lifecycle scripts unless they are reviewed and
+# explicitly added here.
+allowBuilds:
+  esbuild: true
