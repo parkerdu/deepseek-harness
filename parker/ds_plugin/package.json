@@ -8,6 +8,7 @@
     "build": "pnpm -r --if-present build",
     "test": "pnpm -r --if-present test",
     "typecheck": "pnpm -r --if-present typecheck",
-    "pack:running-ant": "pnpm --filter dsh-running-ant pack --pack-destination ./dist"
+    "pack:running-ant": "pnpm --filter dsh-running-ant pack --pack-destination ./dist",
+    "pack:reviewed-development": "pnpm --filter dsh-reviewed-development pack --pack-destination ./dist"
   }
 }
