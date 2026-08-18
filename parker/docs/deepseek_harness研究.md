@@ -105,7 +105,13 @@ pnpm dsh web
 
 ### 2.1 体验“一切皆插件”
 
-下面不是命令输出回放器，而是一套从空目录开始的 Code Workshop。左栏选择实验，中栏逐步推进，右栏显示当前步骤需要创建的完整文件、命令与真实结果；每个实验最后都有“启动 Web”和“打开页面验收”。静态网页本身不获取 Shell 权限，点击“复制当前内容”后在 Terminal 或编辑器执行。
+下面不是命令输出回放器，而是一套可以逐步执行的 Code Workshop。左栏选择实验，中栏推进步骤，右栏显示当前步骤的代码、命令与结果；每个实验最后都有“启动 Web”和“打开页面验收”。直接打开静态 HTML 时仍可阅读和复制；若希望点击每一步后真实执行，并在当前结果框看到流式输出，先从仓库根目录启动本地执行器：
+
+```sh
+node parker/tutorial-labs/plugin-workshop/workshop-server.mjs
+```
+
+然后打开 `http://127.0.0.1:3090`。页面中的 28 个步骤均绑定了固定动作：代码步骤只写入指定教程文件，命令步骤在仓库根目录运行，浏览器步骤执行本地 HTTP 验收；执行器只监听 `127.0.0.1`，使用随机会话令牌，不开放任意 Shell 输入，也不允许写出当前仓库。
 
 <iframe src="./labs/plugin-lab.html" title="DeepSeek Harness 插件代码 Workshop" style="width:100%;height:880px;border:1px solid #273043;border-radius:16px;background:#0b0d12" loading="lazy"></iframe>
 
@@ -115,16 +121,18 @@ Workshop 当前包含五个完整实验：
 
 | 实验 | 从零写什么 | 怎样启动与验收 |
 | --- | --- | --- |
-| 最小日志插件 | `log-plugin.ts` 与 `cordis.patch.yml` | 用 `--patch` 在 3082 启动；终端看到加载日志，浏览器进入完整 DSH |
+| 三行烟花 UI 插件 | Client `apply()` 直接注册 `🎆` 到 `conversation.input.dock` | 不编译、不安装；确认预置 Profile 后在 3082 启动，打开页面直接看到烟花 |
 | 有依赖的工具插件 | Service Provider、Tool Consumer、Event Observer 与 Web Patch | 先做零费用 smoke，再在 3083 启动；页面手动调用 `parker_greet` |
 | 蓝色蚂蚁 Web UI 插件 | 包清单、Host 入口、Client Slot、React 组件与 Patch | 构建、测试、打包、安装进 `web` Profile，重启后生成期间观察动画 |
 | `dsh-find-plugin` | 不重写社区源码，而是完成来源审查、安装、重启与页面调用 | 在页面询问“帮我找一个 Git diff 插件” |
 | `dsh-web-ui-all` | 审查聚合包实际带入的 Host/Client 能力 | 安装、`--dump-config`、重启，在页面核对任务看板、SSH 与文件面板 |
 
-最小日志插件已经在本机真实启动验证：
+三行烟花 UI 插件已经在本机真实启动验证：
 
 ```text
-[parker-log-plugin] loaded successfully
+# == dsh-fireworks
+- id: ui-fireworks
+  name: dsh-fireworks
 dsh web: http://127.0.0.1:3082
 ```
 
@@ -136,6 +144,8 @@ tool replied: [{"type":"text","text":"你好，Parker！这是 parkerGreeter 服
 ```
 
 这里同时出现三种协作方式：`parkerGreeter` 是 Service；工具注册是当前 Fiber 持有的 Effect；`tools/result` 是 Event。Web 页面中的最后一步再由你手动让模型调用工具，这样可以同时观察 Chat 工具行与终端 Observer 日志。
+
+三行烟花实验故意不编译和安装：插件包在研究仓库准备阶段已经构建并放入默认 `web` Profile，Workshop 只让读者观察三行 Client `apply()`、确认最终组合、启动 Web 和查看页面。这样实验的重点是“一个 Slot 注册如何产生 UI”，不是打包流程。
 
 蓝色蚂蚁实验则完整展示“Web UI 也只是插件”：[`dsh-running-ant`](../ds_plugin/plugins/dsh-running-ant/README.md) 用 Client Slot 把 React 组件贡献到 `conversation.input.dock`，而不是修改官方页面源码；它已经通过 3 个测试文件、4 个测试，并以 tarball 安装到当前 `~/.dsh/profiles/web`。
 

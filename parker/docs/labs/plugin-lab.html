@@ -44,13 +44,21 @@
     pre { margin:0; padding:20px; overflow:auto; white-space:pre; tab-size:2; color:#d4dced; font:13px/1.7 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
     .output { border-top:1px solid #1d2432; background:#0c1117; }
     .output-label { padding:10px 20px 0; color:#69758b; font:700 10px ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.12em; }
-    .output pre { padding-top:9px; color:var(--green); white-space:pre-wrap; }
+    .output pre { max-height:250px; padding-top:9px; overflow:auto; color:var(--green); white-space:pre-wrap; overflow-wrap:anywhere; }
+    .output.live { background:#070a0f; }
+    .output.live pre { color:#b9f5c7; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
     .actions { display:flex; flex-wrap:wrap; gap:9px; align-items:center; padding:13px 16px; border-top:1px solid #1d2432; background:#0c1017; }
-    .primary,.secondary,.open { border-radius:9px; padding:8px 12px; cursor:pointer; text-decoration:none; }
+    .primary,.secondary,.open,.run { border-radius:9px; padding:8px 12px; cursor:pointer; text-decoration:none; }
     .primary { border:0; background:var(--blue); color:white; font-weight:700; }
     .secondary { border:1px solid #303a4e; background:transparent; color:#b8c2d4; }
     .open { border:1px solid #27695e; background:#12332c; color:#86e5ce; }
+    .run { border:1px solid #7a5c1d; background:#3b2b0d; color:#ffd783; font-weight:700; }
+    .run:disabled,.secondary:disabled { cursor:not-allowed; opacity:.45; }
     .counter { margin-left:auto; color:#667287; font:12px ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .terminal-state { padding:4px 8px; border-radius:999px; background:#252d3d; color:#8e9ab0; font:700 10px ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .terminal-state.ready { background:#16372d; color:#89e4bd; }
+    .terminal-state.running { background:#3c2d0e; color:#ffd883; }
+    .terminal-state.error { background:#431d25; color:#ff9aaa; }
     footer { display:flex; justify-content:space-between; gap:20px; margin-top:13px; color:#707c91; font-size:12px; }
     @media (max-width:1050px) { .workshop{grid-template-columns:220px minmax(0,1fr)}.steps{grid-column:1/-1;grid-row:2;display:flex;overflow:auto;border-top:1px solid var(--line)}.steps .rail-label{display:none}.step-btn{min-width:210px}.workshop main{grid-column:2;grid-row:1/3}.workshop{min-height:780px} }
     @media (max-width:760px) { header{align-items:start;flex-direction:column}.stamp{display:none}.workshop{display:block}.rail{border-right:0;border-bottom:1px solid var(--line);display:flex;overflow:auto}.rail-label{display:none}.lab-btn{min-width:220px}.steps{display:flex}.workshop main{min-height:650px}.counter{width:100%;margin-left:0} }
@@ -70,24 +78,23 @@
         <section class="editor">
           <div class="editor-bar"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span class="file" id="file"></span></div>
           <pre id="content"></pre>
-          <section class="output" id="outputBox"><div class="output-label">ACTUAL / EXPECTED RESULT</div><pre id="output"></pre></section>
+          <section class="output" id="outputBox"><div class="output-label" id="outputLabel">ACTUAL / EXPECTED RESULT</div><pre id="output"></pre></section>
         </section>
-        <div class="actions"><button class="primary" id="copy">复制当前内容</button><button class="secondary" id="prev">← 上一步</button><button class="secondary" id="next">下一步 →</button><a class="open" id="open" target="_blank" rel="noreferrer">打开 Web 页面 ↗</a><span class="counter" id="counter"></span></div>
+        <div class="actions"><button class="run" id="run">▶ 执行此步骤</button><button class="secondary" id="stop" disabled>停止</button><button class="secondary" id="clear">清除结果</button><span class="terminal-state" id="terminalState">静态预览</span><button class="primary" id="copy">复制当前内容</button><button class="secondary" id="prev">← 上一步</button><button class="secondary" id="next">下一步 →</button><a class="open" id="open" target="_blank" rel="noreferrer">打开 Web 页面 ↗</a><span class="counter" id="counter"></span></div>
       </main>
     </section>
-    <footer><span>真实验证：日志插件 Web、Service/Tool/Event 无模型 smoke、蚂蚁测试、Profile 最终组合</span><span>网页本身不持有 Shell 权限；复制后在 Terminal 执行</span></footer>
+    <footer><span>真实验证：三行烟花 UI、Service/Tool/Event 无模型 smoke、蚂蚁测试、Profile 最终组合</span><span>启动命令：node parker/tutorial-labs/plugin-workshop/workshop-server.mjs</span></footer>
   </div>
   <script>
     const lines = (...items) => items.join('\n')
     const labs = [
       {
-        title:'实验一：最小日志插件', sub:'从 0 到 Web · 5 步', chip:'BEGINNER',
+        title:'实验一：三行烟花 UI 插件', sub:'读代码、启动、看见 · 4 步', chip:'BEGINNER',
         steps:[
-          {title:'创建空目录', meta:'Terminal', description:'先创建只属于本教程的目录，不碰官方 packages。', file:'Terminal', content:lines('cd /Users/parker/Documents/git/agents/deepseek-harness','mkdir -p parker/tutorial-labs/plugin-workshop/01-log-plugin/src'), output:'目录创建完成。'},
-          {title:'写 Host 插件', meta:'TypeScript', description:'最小插件只需要导出 apply。Cordis 加载模块后会调用它。', file:'01-log-plugin/src/log-plugin.ts', content:lines("import type { Context } from '@deepseek-ai/cordis'","","export const name = 'parker-log-plugin'","","export function apply(_ctx: Context): void {","  console.log('[parker-log-plugin] loaded successfully')","}"), output:'保存文件；此时还没有加载，因为它尚未进入 Cordis 组合。'},
-          {title:'写组合 Patch', meta:'YAML', description:'Patch 把插件插入 Web Profile。这里使用绝对路径，避免 Loader 以 Profile 目录解析相对路径。', file:'01-log-plugin/cordis.patch.yml', content:lines('- insert:','    - id: parker-log-plugin',"      name: '/Users/parker/Documents/git/agents/deepseek-harness/parker/tutorial-labs/plugin-workshop/01-log-plugin/src/log-plugin.ts'"), output:'Patch 只改变本次组合，不修改官方源码。'},
-          {title:'启动源码版 Web', meta:'Terminal · REAL', description:'换用 3082，避免和已有 3080 服务冲突。下面是本机真实执行结果。', file:'Terminal', content:lines('cd /Users/parker/Documents/git/agents/deepseek-harness','pnpm dsh web --patch ./parker/tutorial-labs/plugin-workshop/01-log-plugin/cordis.patch.yml --port 3082'), output:lines('[parker-log-plugin] loaded successfully','dsh web: http://127.0.0.1:3082')},
-          {title:'打开页面验收', meta:'Browser · REAL', description:'日志插件没有 UI，验收分成两部分：终端出现加载日志，浏览器仍能正常进入完整 DSH。', file:'http://127.0.0.1:3082/', content:lines('1. 浏览器打开 http://127.0.0.1:3082/','2. 页面标题应为 DeepSeek Harness','3. 能看到工作区、模式、模型选择器和输入框','4. 回到终端确认 loaded successfully 只打印一次'), output:lines('本机验证：title = DeepSeek Harness','输入框可见，社区 Web UI 也正常加载。'), url:'http://127.0.0.1:3082/'}
+          {title:'看三行 apply', meta:'TypeScript · REAL', description:'没有 mountFireworks，也没有独立组件。Client apply 直接把一个烟花图标注册到输入框 Dock。', file:'dsh-fireworks/src/client/index.ts', content:lines('export function apply(ctx: ClientContext): void {',"  ctx.slots.inject('conversation.input.dock', () => ctx.slots.register({ name: 'conversation.input.dock', id: 'fireworks', order: 10, label: '烟花插件' }, () => createElement('span', { title: 'dsh-fireworks 已加载', style: { fontSize: 32 } }, '🎆')))",'}'), output:'apply 连同花括号严格三行；全部可见行为就在第二行，没有隐藏辅助函数。'},
+          {title:'确认插件已启用', meta:'Terminal · REAL', description:'实验不讲编译和安装；仓库准备阶段已经把插件放进默认 Web Profile，这一步只核对最终组合。', file:'Terminal', content:"pnpm dsh --profile web --dump-config | sed -n '/# == dsh-fireworks/,+4p'", output:lines('# == dsh-fireworks','- id: ui-fireworks','  name: dsh-fireworks')},
+          {title:'启动 Web', meta:'Terminal · REAL', description:'使用 3082 启动完整 DSH Web。烟花插件与其他 Web 插件一起由 Profile 加载。', file:'Terminal', content:lines('cd /Users/parker/Documents/git/agents/deepseek-harness','pnpm dsh web --port 3082'), output:'dsh web: http://127.0.0.1:3082'},
+          {title:'打开页面看烟花', meta:'Browser · REAL', description:'不发送消息、不调用模型；页面加载完成后，输入框上方直接出现 32px 的烟花图标。', file:'http://127.0.0.1:3082/', content:lines('1. 打开 http://127.0.0.1:3082/','2. 新建或进入任意会话','3. 在输入框上方找到 🎆','4. 鼠标悬停显示 dsh-fireworks 已加载'), output:'验收结果：🎆 来自插件注册的 conversation.input.dock 条目，不是官方页面硬编码。', url:'http://127.0.0.1:3082/'}
         ]
       },
       {
@@ -137,8 +144,14 @@
     ]
     const labNav=document.querySelector('#labs'), stepNav=document.querySelector('#steps')
     const title=document.querySelector('#title'), description=document.querySelector('#description'), file=document.querySelector('#file')
-    const content=document.querySelector('#content'), output=document.querySelector('#output'), outputBox=document.querySelector('#outputBox')
-    const copy=document.querySelector('#copy'), prev=document.querySelector('#prev'), next=document.querySelector('#next'), open=document.querySelector('#open'), counter=document.querySelector('#counter')
+    const content=document.querySelector('#content'), output=document.querySelector('#output'), outputBox=document.querySelector('#outputBox'), outputLabel=document.querySelector('#outputLabel')
+    const copy=document.querySelector('#copy'), run=document.querySelector('#run'), prev=document.querySelector('#prev'), next=document.querySelector('#next'), open=document.querySelector('#open'), counter=document.querySelector('#counter')
+    const terminalState=document.querySelector('#terminalState'), stop=document.querySelector('#stop'), clear=document.querySelector('#clear')
+    const executor=globalThis.__WORKSHOP_EXECUTOR__
+    let activeController=null
+    let activeActionId=null
+    const executionLogs=new Map(), executionStates=new Map()
+    const currentActionId=()=>String(labIndex+1)+'.'+String(stepIndex+1)
     let labIndex=0, stepIndex=0
     function renderLabs(){
       labNav.querySelectorAll('.lab-btn').forEach(node=>node.remove())
@@ -167,17 +180,84 @@
       description.textContent=step.description
       file.textContent=step.file
       content.textContent=step.content
-      output.textContent=step.output || ''
-      outputBox.style.display=step.output?'block':'none'
+      const actionId=currentActionId(), liveOutput=executionLogs.get(actionId)
+      output.textContent=liveOutput ?? step.output ?? ''
+      outputLabel.textContent=liveOutput===undefined?'ACTUAL / EXPECTED RESULT':'LIVE EXECUTION OUTPUT'
+      outputBox.classList.toggle('live',liveOutput!==undefined)
+      outputBox.style.display=(liveOutput!==undefined || step.output)?'block':'none'
       open.style.display=step.url?'inline-block':'none'
       if(step.url) open.href=step.url
       counter.textContent=(labIndex+1)+'/'+labs.length+' 实验 · '+(stepIndex+1)+'/'+lab.steps.length+' 步'
       prev.disabled=stepIndex===0
       next.disabled=stepIndex===lab.steps.length-1
       copy.textContent='复制当前内容'
+      run.disabled=Boolean(activeController) || !executor
+      run.textContent=executor?'▶ 执行此步骤':'需从 3090 打开后执行'
+      const state=executionStates.get(actionId)
+      terminalState.className='terminal-state'+(state?' '+state:'')
+      terminalState.textContent=!executor?'静态预览':state==='running'?'执行中':state==='ready'?'完成':state==='error'?'失败':state==='stopped'?'已停止':'可执行'
     }
     function render(){renderLabs();renderSteps();renderStep()}
     copy.onclick=async()=>{await navigator.clipboard.writeText(labs[labIndex].steps[stepIndex].content);copy.textContent='已复制'}
+    run.onclick=async()=>{
+      if(!executor || activeController) return
+      const actionId=currentActionId()
+      const step=labs[labIndex].steps[stepIndex]
+      activeController=new AbortController()
+      activeActionId=actionId
+      executionLogs.set(actionId,'')
+      executionStates.set(actionId,'running')
+      run.disabled=true
+      stop.disabled=false
+      terminalState.className='terminal-state running'
+      terminalState.textContent='执行中'
+      renderStep()
+      try {
+        const response=await fetch(executor.origin+'/api/actions/'+encodeURIComponent(actionId),{
+          method:'POST',
+          headers:{'content-type':'application/json','x-workshop-token':executor.token},
+          body:JSON.stringify({content:step.content}),
+          signal:activeController.signal
+        })
+        if(!response.ok){
+          const failure=await response.json().catch(()=>({error:'执行请求失败'}))
+          throw new Error(failure.error || '执行请求失败')
+        }
+        const reader=response.body.getReader(), decoder=new TextDecoder()
+        while(true){
+          const {done,value}=await reader.read()
+          if(done) break
+          executionLogs.set(actionId,(executionLogs.get(actionId) || '')+decoder.decode(value,{stream:true}))
+          if(currentActionId()===actionId){
+            output.textContent=executionLogs.get(actionId)
+            output.scrollTop=output.scrollHeight
+          }
+        }
+        executionStates.set(actionId,'ready')
+      } catch(error) {
+        if(error.name==='AbortError'){
+          executionLogs.set(actionId,(executionLogs.get(actionId) || '')+'\n[已停止当前步骤]\n')
+          executionStates.set(actionId,'stopped')
+        }else{
+          executionLogs.set(actionId,(executionLogs.get(actionId) || '')+'\n[执行错误] '+error.message+'\n')
+          executionStates.set(actionId,'error')
+        }
+      } finally {
+        activeController=null
+        activeActionId=null
+        stop.disabled=true
+        renderStep()
+        output.scrollTop=output.scrollHeight
+      }
+    }
+    stop.onclick=()=>activeController?.abort()
+    clear.onclick=()=>{
+      const actionId=currentActionId()
+      if(activeActionId===actionId) return
+      executionLogs.delete(actionId)
+      executionStates.delete(actionId)
+      renderStep()
+    }
     prev.onclick=()=>{if(stepIndex>0){stepIndex--;renderStep()}}
     next.onclick=()=>{if(stepIndex<labs[labIndex].steps.length-1){stepIndex++;renderStep()}}
     render()
