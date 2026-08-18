@@ -1,0 +1,7 @@
+- insert:
+    - id: parker-greeter-service
+      name: '/Users/parker/Documents/git/agents/deepseek-harness/parker/tutorial-labs/plugin-workshop/02-greeter-tool/src/greeter.ts'
+    - id: parker-greet-tool
+      name: '/Users/parker/Documents/git/agents/deepseek-harness/parker/tutorial-labs/plugin-workshop/02-greeter-tool/src/greet-tool.ts'
+    - id: parker-tool-logger
+      name: '/Users/parker/Documents/git/agents/deepseek-harness/parker/tutorial-labs/plugin-workshop/02-greeter-tool/src/tool-logger.ts'

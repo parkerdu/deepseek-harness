@@ -1,0 +1,3 @@
+- insert:
+    - id: parker-log-plugin
+      name: '/Users/parker/Documents/git/agents/deepseek-harness/parker/tutorial-labs/plugin-workshop/01-log-plugin/src/log-plugin.ts'
