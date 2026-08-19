@@ -89,12 +89,12 @@
     const lines = (...items) => items.join('\n')
     const labs = [
       {
-        title:'实验一：三行烟花 UI 插件', sub:'读代码、启动、看见 · 4 步', chip:'BEGINNER',
+        title:'实验一：三行烟花插件', sub:'本地源码 + --patch · 4 步', chip:'BEGINNER',
         steps:[
-          {title:'看三行 apply', meta:'TypeScript · REAL', description:'没有 mountFireworks，也没有独立组件。Client apply 直接把一个烟花图标注册到输入框 Dock。', file:'dsh-fireworks/src/client/index.ts', content:lines('export function apply(ctx: ClientContext): void {',"  ctx.slots.inject('conversation.input.dock', () => ctx.slots.register({ name: 'conversation.input.dock', id: 'fireworks', order: 10, label: '烟花插件' }, () => createElement('span', { title: 'dsh-fireworks 已加载', style: { fontSize: 32 } }, '🎆')))",'}'), output:'apply 连同花括号严格三行；全部可见行为就在第二行，没有隐藏辅助函数。'},
-          {title:'确认插件已启用', meta:'Terminal · REAL', description:'实验不讲编译和安装；仓库准备阶段已经把插件放进默认 Web Profile，这一步只核对最终组合。', file:'Terminal', content:"pnpm dsh --profile web --dump-config | sed -n '/# == dsh-fireworks/,+4p'", output:lines('# == dsh-fireworks','- id: ui-fireworks','  name: dsh-fireworks')},
-          {title:'启动 Web', meta:'Terminal · REAL', description:'使用 3082 启动完整 DSH Web。烟花插件与其他 Web 插件一起由 Profile 加载。', file:'Terminal', content:lines('cd /Users/parker/Documents/git/agents/deepseek-harness','pnpm dsh web --port 3082'), output:'dsh web: http://127.0.0.1:3082'},
-          {title:'打开页面看烟花', meta:'Browser · REAL', description:'不发送消息、不调用模型；页面加载完成后，输入框上方直接出现 32px 的烟花图标。', file:'http://127.0.0.1:3082/', content:lines('1. 打开 http://127.0.0.1:3082/','2. 新建或进入任意会话','3. 在输入框上方找到 🎆','4. 鼠标悬停显示 dsh-fireworks 已加载'), output:'验收结果：🎆 来自插件注册的 conversation.input.dock 条目，不是官方页面硬编码。', url:'http://127.0.0.1:3082/'}
+          {title:'写三行 apply', meta:'TypeScript', description:'和官方教程一样，先写一个本地 TypeScript 插件。它依赖 WebServer，并在每次返回 index.html 时插入一个烟花。', file:'01-fireworks-plugin/src/fireworks.ts', content:lines("import type { Context } from '@deepseek-ai/cordis'","import type {} from '@deepseek-ai/dsh-host-webserver'","","export const inject = ['webServer']","","export function apply(ctx: Context): void {","  ctx.effect(() => ctx.webServer.tapIndex(html => html.replace('</body>', '<div title=\"fireworks plugin loaded\" style=\"position:fixed;right:24px;top:24px;z-index:9999;font-size:48px;pointer-events:none\">🎆</div></body>')))",'}'), output:'apply 连同花括号严格三行；没有辅助函数，也没有 Client bundle。'},
+          {title:'写 cordis.yml', meta:'YAML', description:'和官方教程一样，用绝对源码路径把本地插件插入 Web 组合；它只影响带 --patch 的这一次启动。', file:'01-fireworks-plugin/cordis.yml', content:lines('- insert:','    - id: fireworks',"      name: '/Users/parker/Documents/git/agents/deepseek-harness/parker/tutorial-labs/plugin-workshop/01-fireworks-plugin/src/fireworks.ts'"), output:'这是启动 overlay，不是 npm 包、Bundle 或 Profile 安装。'},
+          {title:'用 --patch 启动 Web', meta:'Terminal · REAL', description:'默认 web Profile 先启动，再临时叠加本地 cordis.yml。没有编译、打包或安装步骤。', file:'Terminal', content:lines('cd /Users/parker/Documents/git/agents/deepseek-harness','pnpm dsh web --patch ./parker/tutorial-labs/plugin-workshop/01-fireworks-plugin/cordis.yml --port 3082'), output:'dsh web: http://127.0.0.1:3082'},
+          {title:'打开页面看烟花', meta:'Browser · REAL', description:'页面的 HTML 经过插件注册的 index tap，右上角会直接出现 48px 的烟花。', file:'http://127.0.0.1:3082/', content:lines('1. 打开 http://127.0.0.1:3082/','2. 查看页面右上角','3. 应看到一个 48px 的 🎆','4. 不带 --patch 重启后烟花消失'), output:'验收结果：🎆 只属于本次 --patch 启动，默认 web Profile 没有被修改。', url:'http://127.0.0.1:3082/'}
         ]
       },
       {

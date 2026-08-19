@@ -15,10 +15,10 @@ const origin = `http://${host}:${port}`
 const token = randomBytes(24).toString('hex')
 
 const actions = new Map([
-  ['1.1', command('检查三行烟花 apply', "sed -n '/export function apply/,/^}/p' parker/ds_plugin/plugins/dsh-fireworks/src/client/index.ts")],
-  ['1.2', command('确认烟花插件已启用', "pnpm dsh --profile web --dump-config | sed -n '/# == dsh-fireworks/,+4p'")],
-  ['1.3', command('启动烟花插件 Web', webCommand(3082))],
-  ['1.4', command('验收烟花插件页面', `${pageCheckCommand(3082)}\nprintf '\n页面已就绪：输入框上方应显示一个 32px 的 🎆。\n'`)],
+  ['1.1', write('写入三行烟花插件', 'parker/tutorial-labs/plugin-workshop/01-fireworks-plugin/src/fireworks.ts')],
+  ['1.2', write('写入 Web overlay', 'parker/tutorial-labs/plugin-workshop/01-fireworks-plugin/cordis.yml')],
+  ['1.3', command('用 overlay 启动烟花 Web', webCommand(3082, '--patch ./parker/tutorial-labs/plugin-workshop/01-fireworks-plugin/cordis.yml'))],
+  ['1.4', command('验收烟花插件页面', `${pageCheckCommand(3082)}\ncurl -fsS http://127.0.0.1:3082/ | grep -F '🎆' >/dev/null && echo 'HTML 中已找到 🎆，页面右上角应显示烟花。'`)],
 
   ['2.1', write('写入 Service Provider', 'parker/tutorial-labs/plugin-workshop/02-greeter-tool/src/greeter.ts')],
   ['2.2', write('写入工具 Consumer', 'parker/tutorial-labs/plugin-workshop/02-greeter-tool/src/greet-tool.ts')],

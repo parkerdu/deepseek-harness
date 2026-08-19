@@ -5,7 +5,7 @@
 ## 目录
 
 - [`docs/deepseek_harness研究.md`](docs/deepseek_harness研究.md)：官方资料、架构原理、核心特性和实操记录。
-- [`ds_plugin/`](ds_plugin/)：独立的社区插件工作区，包含三行烟花 UI 插件 `dsh-fireworks` 与运行中蓝色蚂蚁插件 `dsh-running-ant`。
+- [`ds_plugin/`](ds_plugin/)：独立的社区插件工作区，包含运行中蓝色蚂蚁插件 `dsh-running-ant`。
 
 ## 默认运行方式
 

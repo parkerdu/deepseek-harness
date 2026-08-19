@@ -9,7 +9,6 @@ ds_plugin/
 ├── shared/                  # 多个 UI 插件复用的构建工具
 ├── plugins/
 │   ├── dsh-running-ant/     # 运行中的蓝色蚂蚁
-│   ├── dsh-fireworks/       # Fireworks 插件
 │   └── dsh-reviewed-development/ # DS/Codex/Claude 评审开发流程
 └── dist/                    # 本地 tarball（构建后生成，不提交）
 ```

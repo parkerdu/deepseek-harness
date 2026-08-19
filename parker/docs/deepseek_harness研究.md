@@ -121,18 +121,16 @@ Workshop 当前包含五个完整实验：
 
 | 实验 | 从零写什么 | 怎样启动与验收 |
 | --- | --- | --- |
-| 三行烟花 UI 插件 | Client `apply()` 直接注册 `🎆` 到 `conversation.input.dock` | 不编译、不安装；确认预置 Profile 后在 3082 启动，打开页面直接看到烟花 |
+| 三行烟花插件 | 本地 `apply()` 通过 `webServer.tapIndex()` 插入 `🎆` | 不编译、不安装；用 `--patch` 临时叠加到 Web，打开页面直接看到烟花 |
 | 有依赖的工具插件 | Service Provider、Tool Consumer、Event Observer 与 Web Patch | 先做零费用 smoke，再在 3083 启动；页面手动调用 `parker_greet` |
 | 蓝色蚂蚁 Web UI 插件 | 包清单、Host 入口、Client Slot、React 组件与 Patch | 构建、测试、打包、安装进 `web` Profile，重启后生成期间观察动画 |
 | `dsh-find-plugin` | 不重写社区源码，而是完成来源审查、安装、重启与页面调用 | 在页面询问“帮我找一个 Git diff 插件” |
 | `dsh-web-ui-all` | 审查聚合包实际带入的 Host/Client 能力 | 安装、`--dump-config`、重启，在页面核对任务看板、SSH 与文件面板 |
 
-三行烟花 UI 插件已经在本机真实启动验证：
+三行烟花插件采用与官方基础教程相同的启动方式：
 
 ```text
-# == dsh-fireworks
-- id: ui-fireworks
-  name: dsh-fireworks
+pnpm dsh web --patch ./parker/tutorial-labs/plugin-workshop/01-fireworks-plugin/cordis.yml --port 3082
 dsh web: http://127.0.0.1:3082
 ```
 
@@ -145,7 +143,7 @@ tool replied: [{"type":"text","text":"你好，Parker！这是 parkerGreeter 服
 
 这里同时出现三种协作方式：`parkerGreeter` 是 Service；工具注册是当前 Fiber 持有的 Effect；`tools/result` 是 Event。Web 页面中的最后一步再由你手动让模型调用工具，这样可以同时观察 Chat 工具行与终端 Observer 日志。
 
-三行烟花实验故意不编译和安装：插件包在研究仓库准备阶段已经构建并放入默认 `web` Profile，Workshop 只让读者观察三行 Client `apply()`、确认最终组合、启动 Web 和查看页面。这样实验的重点是“一个 Slot 注册如何产生 UI”，不是打包流程。
+三行烟花实验故意不编译和安装，也不把插件写入默认 Profile。`cordis.yml` 只在带 `--patch` 的本次启动中插入绝对路径指向的本地 TypeScript 插件；插件通过 `webServer.tapIndex()` 修改返回的 `index.html`，因此打开页面即可看到右上角的 `🎆`。不带该 `--patch` 重启后，烟花消失。它用于解释最小插件和 overlay；正式的可复用浏览器组件仍应使用 `dsh.client` 与 Client Slot。
 
 蓝色蚂蚁实验则完整展示“Web UI 也只是插件”：[`dsh-running-ant`](../ds_plugin/plugins/dsh-running-ant/README.md) 用 Client Slot 把 React 组件贡献到 `conversation.input.dock`，而不是修改官方页面源码；它已经通过 3 个测试文件、4 个测试，并以 tarball 安装到当前 `~/.dsh/profiles/web`。
 

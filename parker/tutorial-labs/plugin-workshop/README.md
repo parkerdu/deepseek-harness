@@ -2,13 +2,13 @@
 
 这里保存交互教程中从零构建的完整源码。每个实验都能作为 Web overlay 加载，不修改官方 Harness 源码。
 
-- `dsh-fireworks`：最小可见 UI 插件，Client `apply()` 直接向输入框 Dock 注册一个 `🎆`。
+- `01-fireworks-plugin`：与官方基础教程同构的本地插件，通过 `--patch` 临时向 Web 页面插入一个 `🎆`。
 - `02-greeter-tool`：Service Provider、工具 Consumer 与事件 Observer 三插件组合。
 
-实验一使用仓库准备阶段已经构建并安装的 `dsh-fireworks`，实验流程本身不编译、不打包、不安装，只验证组合和页面结果。启动它：
+实验一不编译、不打包、不安装，也不修改默认 Profile。直接用本地 overlay 启动：
 
 ```sh
-pnpm dsh web --port 3082
+pnpm dsh web --patch ./parker/tutorial-labs/plugin-workshop/01-fireworks-plugin/cordis.yml --port 3082
 ```
 
 ```sh
