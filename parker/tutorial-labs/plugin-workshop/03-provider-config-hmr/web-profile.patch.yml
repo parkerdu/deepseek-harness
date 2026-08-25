@@ -1,0 +1,10 @@
+# Copy this insert entry into the current Web profile's cordis.patch.yml.
+# Replace /absolute/path/to/deepseek-harness with this checkout's absolute path.
+- insert:
+    - id: tutorial-mock-provider
+      name: '/absolute/path/to/deepseek-harness/parker/tutorial-labs/plugin-workshop/03-provider-config-hmr/mock-provider.ts'
+      config:
+        apiKey: 'demo-key-BEFORE-HMR-OLD1'
+        baseURL: 'https://provider-before-hot-reload.invalid/api/v1/legacy-region'
+    - id: tutorial-provider-consumer
+      name: '/absolute/path/to/deepseek-harness/parker/tutorial-labs/plugin-workshop/03-provider-config-hmr/provider-consumer.ts'

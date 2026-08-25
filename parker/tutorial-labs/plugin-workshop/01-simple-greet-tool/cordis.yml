@@ -1,0 +1,3 @@
+- insert:
+    - id: greet-tool
+      name: '/Users/changchun/Documents/git/github/deepseek-harness/parker/tutorial-labs/plugin-workshop/01-simple-greet-tool/src/greet-tool.ts'

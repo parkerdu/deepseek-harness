@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#f3f1eb">
+  <title>DeepSeek Harness · 交互式课程实验台</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#workshop-main">跳到实验内容</a>
+  <header class="masthead">
+    <a class="brand" href="/" aria-label="返回 Workshop 首页">
+      <span class="brand-mark">DSH</span>
+      <span><strong>Harness Workshop</strong><small>源码课程 · 本机实验台</small></span>
+    </a>
+    <nav id="chapterTabs" class="chapter-tabs" aria-label="课程章节"></nav>
+    <div class="runtime-pill"><i aria-hidden="true"></i><span>LOCAL EXECUTOR</span><strong id="executorState">CONNECTED</strong></div>
+  </header>
+
+  <main class="page-shell" id="workshop-main">
+    <section class="chapter-intro">
+      <div>
+        <p class="kicker" id="chapterEyebrow"></p>
+        <h1 id="chapterTitle"></h1>
+      </div>
+      <div class="chapter-meter">
+        <span>本章进度</span>
+        <strong id="chapterProgressText">0 / 0</strong>
+        <div id="chapterProgress" role="progressbar" aria-label="本章完成进度" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0"><i id="chapterProgressBar"></i></div>
+      </div>
+    </section>
+
+    <section class="console-grid">
+      <aside class="experiment-rail">
+        <div class="rail-heading"><span>实验列表</span><small id="experimentCount"></small></div>
+        <nav id="experimentList" aria-label="实验列表"></nav>
+      </aside>
+
+      <aside class="step-rail">
+        <div class="rail-heading"><span>实验步骤</span><small id="stepCount"></small></div>
+        <nav id="stepList" aria-label="实验步骤"></nav>
+      </aside>
+
+      <article class="workbench">
+        <header class="step-header">
+          <div class="step-overline"><span id="experimentNumber"></span><i aria-hidden="true"></i><span id="stepKind"></span></div>
+          <h2 id="stepTitle"></h2>
+          <p id="stepDescription"></p>
+        </header>
+
+        <section class="code-panel">
+          <header class="panel-bar">
+            <div class="panel-identity"><span>代码 / 配置</span><small id="stepFile"></small></div>
+            <button id="copyButton" class="icon-button" type="button">复制</button>
+          </header>
+          <pre><code id="stepContent"></code></pre>
+        </section>
+
+        <section class="terminal-panel">
+          <header class="terminal-bar">
+            <div><span class="prompt-sign">›_</span><strong>实时终端</strong><small>命令输出会实时出现在这里</small><code id="terminalAction"></code></div>
+            <div class="terminal-actions">
+              <span id="terminalStatus" class="status-badge idle" aria-live="polite">等待执行</span>
+              <button id="clearButton" class="text-button" type="button">清空</button>
+            </div>
+          </header>
+          <pre id="terminalOutput" aria-live="polite"></pre>
+        </section>
+
+        <section class="expected-panel">
+          <span>验收信号</span>
+          <p id="stepExpected"></p>
+        </section>
+
+        <footer class="workbench-actions">
+          <button id="runButton" class="run-button" type="button"><span aria-hidden="true">▶</span>真实执行此步骤</button>
+          <button id="stopButton" class="stop-button" type="button" disabled>停止当前命令</button>
+          <a id="openButton" class="open-button" target="_blank" rel="noreferrer">打开 Web ↗</a>
+          <div class="spacer"></div>
+          <button id="previousButton" class="nav-button" type="button">← 上一步</button>
+          <button id="nextButton" class="nav-button" type="button">下一步 →</button>
+        </footer>
+      </article>
+    </section>
+  </main>
+
+  <footer class="page-footer">
+    <span>按钮只执行课程预先登记的固定动作。</span>
+    <span>切换步骤不会终止正在运行的命令。</span>
+  </footer>
+  <span id="copyStatus" class="sr-only" aria-live="polite"></span>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
