@@ -83,3 +83,35 @@ test('apply replaces a commented empty-array placeholder and cleanup restores it
   await cleanup(paths)
   assert.equal(await readFile(paths.patchPath, 'utf8'), original)
 })
+
+test('cleanup safely removes an intact experiment block when its recovery state is missing', async t => {
+  const paths = await fixture()
+  t.after(() => rm(paths.directory, { recursive: true, force: true }))
+  const original = '# Local Web Profile Patch\n# Loader entries follow.\n[]\n'
+  await writeFile(paths.patchPath, original, 'utf8')
+
+  await applyV1(paths)
+  await updateV2(paths)
+  await rm(paths.statePath)
+
+  const result = await cleanup(paths)
+
+  assert.deepEqual(result, { cleaned: true, recovery: 'marked-block' })
+  assert.equal(
+    await readFile(paths.patchPath, 'utf8'),
+    '# Local Web Profile Patch\n# Loader entries follow.\n[]\n',
+  )
+})
+
+test('cleanup refuses an edited experiment block when its recovery state is missing', async t => {
+  const paths = await fixture()
+  t.after(() => rm(paths.directory, { recursive: true, force: true }))
+  await writeFile(paths.patchPath, '[]\n', 'utf8')
+  await applyV1(paths)
+  await rm(paths.statePath)
+  const edited = (await readFile(paths.patchPath, 'utf8')).replace(before.apiKey, 'manually-edited-key')
+  await writeFile(paths.patchPath, edited, 'utf8')
+
+  await assert.rejects(cleanup(paths), /实验区块.*无法确认.*拒绝自动清理/)
+  assert.match(await readFile(paths.patchPath, 'utf8'), /manually-edited-key/)
+})

@@ -97,28 +97,30 @@ test('reset refuses to stop a listener that does not belong to this Workshop', a
   assert.equal(providerCleanupCount, 0)
 })
 
-test('reset refuses to remove a Provider block when its recovery state is missing', async t => {
+test('reset removes an intact Provider block when its recovery state is missing', async t => {
   const paths = await fixture()
   t.after(() => rm(paths.directory, { recursive: true, force: true }))
-  await writeFile(
-    resolve(paths.profileDirectory, 'cordis.patch.yml'),
-    '# >>> dsh-workshop:provider-hmr >>>\n- insert: []\n# <<< dsh-workshop:provider-hmr <<<\n',
-    'utf8',
-  )
-  let providerCleanupCount = 0
+  const patchPath = resolve(paths.profileDirectory, 'cordis.patch.yml')
+  const statePath = resolve(paths.directory, 'missing-provider-state.json')
+  const original = '# Local Web Profile Patch\n[]\n'
+  await writeFile(patchPath, original, 'utf8')
+  const { applyV1, updateV2 } = await import('./provider-profile.mjs')
+  await applyV1({ patchPath, statePath })
+  await updateV2({ patchPath, statePath })
+  await rm(statePath)
 
-  await assert.rejects(
-    resetWorkshopState({
-      repositoryRoot: paths.repositoryRoot,
-      profileDirectory: paths.profileDirectory,
-      providerStatePath: resolve(paths.directory, 'missing-provider-state.json'),
-      inspectPort: async () => [],
-      stopListener: async () => assert.fail('there are no listeners'),
-      cleanupProvider: async () => { providerCleanupCount += 1 },
-      removeProfilePlugin: async () => assert.fail('must not mutate the Profile'),
-      writeLine: () => {},
-    }),
-    /恢复状态已丢失.*拒绝自动清理/,
-  )
-  assert.equal(providerCleanupCount, 0)
+  const lines = []
+  const result = await resetWorkshopState({
+    repositoryRoot: paths.repositoryRoot,
+    profileDirectory: paths.profileDirectory,
+    providerStatePath: statePath,
+    inspectPort: async () => [],
+    stopListener: async () => assert.fail('there are no listeners'),
+    removeProfilePlugin: async () => assert.fail('must not mutate the Profile'),
+    writeLine: line => lines.push(line),
+  })
+
+  assert.equal(await readFile(patchPath, 'utf8'), original)
+  assert.equal(result.restoredProvider, true)
+  assert.ok(lines.some(line => /已移除遗留的实验三 Provider 配置/.test(line)))
 })

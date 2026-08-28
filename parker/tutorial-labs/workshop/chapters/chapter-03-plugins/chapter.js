@@ -193,7 +193,6 @@ export function createChapter03Plugins({ repositoryRoot }) {
               "sed -n '1,240p' ~/.dsh/profiles/web/cordis.patch.yml",
               '',
               '# 本实验直接使用 ~/.dsh，不设置新的 DSH_HOME。',
-              '# pnpm dsh --profile web --dump-config 只是排查最终组合的可选命令，不是实验前置步骤。',
             ),
             expected: '终端明确显示 Web Profile 与实时 Patch 的固定位置和当前内容。',
           },

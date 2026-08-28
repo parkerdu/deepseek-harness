@@ -1,13 +1,11 @@
 import { spawn } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
-import { homedir, tmpdir } from 'node:os'
+import { homedir } from 'node:os'
 import { resolve } from 'node:path'
 import { cleanup as cleanupProviderExperiment } from './provider-profile.mjs'
 
 const workshopPorts = [3090, 3082, 3083, 3084, 3085, 3086]
-const providerStartMarker = '# >>> dsh-workshop:provider-hmr >>>'
-const providerEndMarker = '# <<< dsh-workshop:provider-hmr <<<'
 const communityPackage = '@linxin666/dsh-web-ui-all'
 const communityWorkshopSpecs = new Set(['0.2.6', '^0.2.6', '~0.2.6'])
 
@@ -20,7 +18,7 @@ const communityWorkshopSpecs = new Set(['0.2.6', '^0.2.6', '~0.2.6'])
 export async function resetWorkshopState({
   repositoryRoot,
   profileDirectory = resolve(homedir(), '.dsh/profiles/web'),
-  providerStatePath = resolve(tmpdir(), `dsh-workshop-provider-hmr-${process.getuid?.() ?? 'user'}.json`),
+  providerStatePath = resolve(homedir(), '.dsh/.workshop-state/provider-hmr.json'),
   inspectPort = inspectPortListeners,
   stopListener = stopOwnedListener,
   cleanupProvider = cleanupProviderExperiment,
@@ -50,14 +48,10 @@ export async function resetWorkshopState({
 
   const providerPatchPath = resolve(profileDirectory, 'cordis.patch.yml')
   const providerStateExists = existsSync(providerStatePath)
-  if (!providerStateExists && existsSync(providerPatchPath)) {
-    const patch = await readFile(providerPatchPath, 'utf8')
-    if (patch.includes(providerStartMarker) || patch.includes(providerEndMarker)) {
-      throw new Error(`检测到 ${providerPatchPath} 中有 Provider 实验区块，但恢复状态已丢失；为避免覆盖原配置，Workshop 拒绝自动清理。`)
-    }
-  }
-  await cleanupProvider({ patchPath: providerPatchPath, statePath: providerStatePath })
-  if (providerStateExists) writeLine('- 已恢复实验三开始前的 Web Profile Patch')
+  const providerCleanup = await cleanupProvider({ patchPath: providerPatchPath, statePath: providerStatePath })
+  const restoredProvider = providerCleanup?.cleaned ?? providerStateExists
+  if (providerCleanup?.recovery === 'marked-block') writeLine('- 已移除遗留的实验三 Provider 配置')
+  else if (restoredProvider) writeLine('- 已恢复实验三开始前的 Web Profile Patch')
 
   const removedPlugins = []
   const manifestPath = resolve(profileDirectory, 'package.json')
@@ -77,11 +71,11 @@ export async function resetWorkshopState({
     }
   }
 
-  if (stoppedPorts.length === 0 && !providerStateExists && removedPlugins.length === 0) {
+  if (stoppedPorts.length === 0 && !restoredProvider && removedPlugins.length === 0) {
     writeLine('- 未发现上次实验残留')
   }
   writeLine('Workshop 实验环境已就绪。')
-  return { stoppedPorts, restoredProvider: providerStateExists, removedPlugins }
+  return { stoppedPorts, restoredProvider, removedPlugins }
 }
 
 function isWorkshopArchive(spec, profileDirectory, expectedArchive) {

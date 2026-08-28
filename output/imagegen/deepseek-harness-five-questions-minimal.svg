@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#07090c"/>
+      <stop offset="0.62" stop-color="#0a0d12"/>
+      <stop offset="1" stop-color="#07101a"/>
+    </linearGradient>
+    <radialGradient id="blueGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#168cff" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#168cff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#3cc8ff"/>
+      <stop offset="1" stop-color="#2878ff"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-20%" y="-20%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="14" stdDeviation="20" flood-color="#000000" flood-opacity="0.34"/>
+    </filter>
+    <style>
+      text { font-family: "Alibaba PuHuiTi", "PingFang SC", "Hiragino Sans GB", sans-serif; }
+      .title { font-size: 48px; font-weight: 700; fill: #f7f8fa; }
+      .eyebrow { font-size: 18px; font-weight: 700; letter-spacing: 2px; fill: #5abfff; }
+      .official { font-size: 31px; font-weight: 500; fill: #a6a9af; }
+      .highlight { font-size: 31px; font-weight: 650; fill: #f7f8fa; }
+      .section { font-size: 22px; font-weight: 650; fill: #e9edf2; }
+      .question { font-size: 25px; font-weight: 650; fill: #eef2f7; }
+      .number { font-size: 16px; font-weight: 800; fill: #061019; text-anchor: middle; dominant-baseline: central; }
+      .footer { font-size: 17px; font-weight: 500; fill: #68717d; }
+    </style>
+  </defs>
+
+  <rect width="1920" height="1080" fill="url(#background)"/>
+  <circle cx="1710" cy="140" r="430" fill="url(#blueGlow)"/>
+  <circle cx="210" cy="970" r="350" fill="url(#blueGlow)" opacity="0.45"/>
+  <path d="M0 185 C500 65 1120 220 1920 56" fill="none" stroke="#45bfff" stroke-opacity="0.07" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <g transform="translate(96 66)">
+    <g fill="none" stroke="#f2f5f8" stroke-width="2.5" stroke-linejoin="round">
+      <path d="M0 20 L22 7 L44 20 L22 33 Z"/>
+      <path d="M0 20 V46 L22 59 L44 46 V20"/>
+      <path d="M22 33 V59"/>
+    </g>
+    <text x="68" y="45" class="title">一切皆插件</text>
+    <text x="68" y="76" class="eyebrow">EVERYTHING IS A PLUGIN</text>
+    <text x="1728" y="45" text-anchor="end" class="footer">deepseek.com/harness</text>
+  </g>
+
+  <!-- Exact official paragraph -->
+  <g transform="translate(96 214)">
+    <rect x="0" y="0" width="1728" height="414" rx="26" fill="#0d1117" stroke="#202833"/>
+    <rect x="0" y="0" width="5" height="414" rx="2.5" fill="url(#accent)"/>
+    <text x="40" y="47" class="eyebrow">官网原文 · 逐字保留</text>
+
+    <text x="40" y="116" class="official">DeepSeek Harness 基于</text>
+    <text x="440" y="116" class="highlight">Cordis 插件系统</text>
+    <line x1="440" y1="129" x2="676" y2="129" stroke="#38b9ff" stroke-width="3"/>
+    <circle cx="689" cy="126" r="17" fill="#48c8ff"/>
+    <text x="689" y="127" class="number">01</text>
+    <text x="719" y="116" class="official">构建。</text>
+
+    <text x="40" y="182" class="official">模型、工具、技能、会话、沙箱、存储、循环、调度、UI 等所有 Agent 能力均由插件提供，</text>
+
+    <text x="40" y="248" class="official">并通过</text>
+    <text x="152" y="248" class="highlight">Cordis 服务</text>
+    <line x1="152" y1="261" x2="320" y2="261" stroke="#38b9ff" stroke-width="3"/>
+    <circle cx="333" cy="258" r="17" fill="#48c8ff"/>
+    <text x="333" y="259" class="number">02</text>
+    <text x="360" y="248" class="official">与</text>
+    <text x="400" y="248" class="highlight">事件</text>
+    <line x1="400" y1="261" x2="462" y2="261" stroke="#38b9ff" stroke-width="3"/>
+    <circle cx="475" cy="258" r="17" fill="#48c8ff"/>
+    <text x="475" y="259" class="number">03</text>
+    <text x="502" y="248" class="highlight">彼此协作</text>
+    <line x1="502" y1="261" x2="626" y2="261" stroke="#38b9ff" stroke-width="3"/>
+    <circle cx="639" cy="258" r="17" fill="#48c8ff"/>
+    <text x="639" y="259" class="number">04</text>
+    <text x="666" y="248" class="official">。</text>
+
+    <text x="40" y="314" class="official">开发者无需改动 DeepSeek Harness 源码，即可在</text>
+    <text x="744" y="314" class="highlight">配置层选择、替换或扩展</text>
+    <line x1="744" y1="327" x2="1084" y2="327" stroke="#38b9ff" stroke-width="3"/>
+    <circle cx="1097" cy="324" r="17" fill="#48c8ff"/>
+    <text x="1097" y="325" class="number">05</text>
+    <text x="1127" y="314" class="official">任一能力。</text>
+
+    <text x="40" y="380" class="footer">https://www.deepseek.com/harness/</text>
+  </g>
+
+  <!-- Questions -->
+  <g transform="translate(96 678)">
+    <text x="0" y="26" class="section">从原文自然引出的五个问题</text>
+    <text x="1728" y="26" text-anchor="end" class="footer">通过编号对应，不使用连线</text>
+
+    <g transform="translate(0 64)" filter="url(#cardShadow)">
+      <rect width="326" height="214" rx="22" fill="#0e141c" stroke="#252f3b"/>
+      <rect width="326" height="4" rx="2" fill="url(#accent)"/>
+      <circle cx="38" cy="42" r="20" fill="#48c8ff"/>
+      <text x="38" y="43" class="number">01</text>
+      <text x="26" y="100" class="question">什么是</text>
+      <text x="26" y="139" class="question">Cordis plugin？</text>
+    </g>
+
+    <g transform="translate(350 64)" filter="url(#cardShadow)">
+      <rect width="326" height="214" rx="22" fill="#0e141c" stroke="#252f3b"/>
+      <rect width="326" height="4" rx="2" fill="url(#accent)"/>
+      <circle cx="38" cy="42" r="20" fill="#48c8ff"/>
+      <text x="38" y="43" class="number">02</text>
+      <text x="26" y="100" class="question">什么是</text>
+      <text x="26" y="139" class="question">Cordis service？</text>
+    </g>
+
+    <g transform="translate(700 64)" filter="url(#cardShadow)">
+      <rect width="326" height="214" rx="22" fill="#0e141c" stroke="#252f3b"/>
+      <rect width="326" height="4" rx="2" fill="url(#accent)"/>
+      <circle cx="38" cy="42" r="20" fill="#48c8ff"/>
+      <text x="38" y="43" class="number">03</text>
+      <text x="26" y="100" class="question">什么是</text>
+      <text x="26" y="139" class="question">Cordis event？</text>
+    </g>
+
+    <g transform="translate(1050 64)" filter="url(#cardShadow)">
+      <rect width="326" height="214" rx="22" fill="#0e141c" stroke="#252f3b"/>
+      <rect width="326" height="4" rx="2" fill="url(#accent)"/>
+      <circle cx="38" cy="42" r="20" fill="#48c8ff"/>
+      <text x="38" y="43" class="number">04</text>
+      <text x="26" y="95" class="question" style="font-size:23px">Cordis service 与</text>
+      <text x="26" y="133" class="question" style="font-size:23px">event 如何协作？</text>
+    </g>
+
+    <g transform="translate(1400 64)" filter="url(#cardShadow)">
+      <rect width="328" height="214" rx="22" fill="#0e141c" stroke="#252f3b"/>
+      <rect width="328" height="4" rx="2" fill="url(#accent)"/>
+      <circle cx="38" cy="42" r="20" fill="#48c8ff"/>
+      <text x="38" y="43" class="number">05</text>
+      <text x="26" y="91" class="question" style="font-size:21px">如何在配置层选择、</text>
+      <text x="26" y="126" class="question" style="font-size:21px">替换或扩展任一能力？</text>
+    </g>
+  </g>
+
+  <g transform="translate(96 1030)">
+    <circle cx="5" cy="-4" r="5" fill="#42c2ff"/>
+    <text x="22" y="2" class="footer">带着问题，从源码与实践理解 Cordis 插件体系</text>
+  </g>
+</svg>

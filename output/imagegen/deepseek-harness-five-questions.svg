@@ -1,0 +1,192 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#07111f"/>
+      <stop offset="0.55" stop-color="#0a1730"/>
+      <stop offset="1" stop-color="#081221"/>
+    </linearGradient>
+    <linearGradient id="hero" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#42d5ff"/>
+      <stop offset="0.52" stop-color="#6f8cff"/>
+      <stop offset="1" stop-color="#b67cff"/>
+    </linearGradient>
+    <linearGradient id="core" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#173866"/>
+      <stop offset="1" stop-color="#20295d"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#35c9ff" stop-opacity="0.26"/>
+      <stop offset="1" stop-color="#35c9ff" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="dots" width="32" height="32" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.4" fill="#9fc2ff" opacity="0.12"/>
+    </pattern>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="18" stdDeviation="24" flood-color="#000814" flood-opacity="0.48"/>
+    </filter>
+    <filter id="softGlow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="16" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <style>
+      text { font-family: "Alibaba PuHuiTi", "PingFang SC", "Hiragino Sans GB", sans-serif; }
+      .eyebrow { font-size: 22px; font-weight: 700; letter-spacing: 2px; fill: #92a9c9; }
+      .title { font-size: 66px; font-weight: 800; letter-spacing: -1px; fill: #f7fbff; }
+      .subtitle { font-size: 27px; font-weight: 400; fill: #aebed5; }
+      .panel-title { font-size: 27px; font-weight: 700; fill: #f7fbff; }
+      .body { font-size: 27px; font-weight: 400; fill: #d7e2f2; }
+      .body-strong { font-weight: 700; fill: #ffffff; }
+      .small { font-size: 19px; font-weight: 500; fill: #95aac8; }
+      .chip { font-size: 19px; font-weight: 700; }
+      .question { font-size: 27px; font-weight: 600; fill: #f5f9ff; }
+      .keyword { font-size: 17px; font-weight: 700; letter-spacing: 1.2px; }
+      .number { font-size: 21px; font-weight: 800; fill: #081321; text-anchor: middle; dominant-baseline: central; }
+    </style>
+  </defs>
+
+  <rect width="1920" height="1080" fill="url(#bg)"/>
+  <rect width="1920" height="1080" fill="url(#dots)"/>
+  <circle cx="250" cy="140" r="330" fill="url(#glow)" opacity="0.7"/>
+  <circle cx="1750" cy="930" r="410" fill="url(#glow)" opacity="0.45"/>
+  <path d="M0 235 C420 110 690 235 1080 126 C1400 36 1670 90 1920 24" fill="none" stroke="#4ccfff" stroke-width="1.5" opacity="0.10"/>
+
+  <!-- Header -->
+  <g transform="translate(92 70)">
+    <rect x="0" y="0" width="228" height="44" rx="22" fill="#102747" stroke="#2b4b72"/>
+    <circle cx="25" cy="22" r="6" fill="#43d2ff"/>
+    <text x="44" y="30" class="eyebrow" style="font-size:18px; letter-spacing:1.5px">1.2 · 核心特性</text>
+    <text x="0" y="119" class="title">从官网原文，拆出 5 个问题</text>
+    <text x="0" y="169" class="subtitle">原文逐字保留，只做框选与连线</text>
+  </g>
+
+  <!-- Left thesis panel -->
+  <g filter="url(#shadow)">
+    <rect x="88" y="274" width="782" height="682" rx="34" fill="#0d1c32" stroke="#243b5c" stroke-width="1.5"/>
+  </g>
+  <g transform="translate(128 313)">
+    <text x="0" y="31" class="panel-title">官网原文（逐字保留）</text>
+    <text x="0" y="66" class="small">框选内容均直接取自下方原文</text>
+
+    <rect x="0" y="92" width="702" height="544" rx="24" fill="#10233b" stroke="#315174"/>
+    <rect x="0" y="92" width="7" height="544" rx="3.5" fill="url(#hero)"/>
+    <text x="28" y="133" style="font-size:48px; font-weight:800; fill:#315174">“</text>
+
+    <!-- Exact official text, line-broken without adding or removing words -->
+    <text x="28" y="165" class="body" style="font-size:22px; font-weight:600">DeepSeek Harness 基于</text>
+    <rect x="258" y="126" width="244" height="54" rx="13" fill="#123a56" stroke="#58d8ff" stroke-width="2"/>
+    <text x="278" y="162" class="body" style="font-size:22px; font-weight:700; fill:#72e1ff">Cordis 插件系统</text>
+    <circle cx="490" cy="127" r="15" fill="#58d8ff"/>
+    <text x="490" y="128" class="number" style="font-size:13px">01</text>
+    <text x="515" y="165" class="body" style="font-size:22px; font-weight:600">构建。</text>
+
+    <text x="28" y="245" class="body" style="font-size:22px; font-weight:600">模型、工具、技能、会话、沙箱、存储、</text>
+    <text x="28" y="297" class="body" style="font-size:22px; font-weight:600">循环、调度、UI 等所有 Agent 能力均由插件提供，</text>
+
+    <text x="28" y="377" class="body" style="font-size:22px; font-weight:600">并通过</text>
+    <rect x="100" y="338" width="192" height="54" rx="13" fill="#173b3d" stroke="#69e0bd" stroke-width="2"/>
+    <text x="120" y="374" class="body" style="font-size:22px; font-weight:700; fill:#82e8ca">Cordis 服务</text>
+    <circle cx="280" cy="339" r="15" fill="#69e0bd"/>
+    <text x="280" y="340" class="number" style="font-size:13px">02</text>
+    <text x="305" y="377" class="body" style="font-size:22px; font-weight:600">与</text>
+    <rect x="335" y="338" width="80" height="54" rx="13" fill="#463322" stroke="#ffbc65" stroke-width="2"/>
+    <text x="353" y="374" class="body" style="font-size:22px; font-weight:700; fill:#ffc576">事件</text>
+    <circle cx="403" cy="339" r="15" fill="#ffbc65"/>
+    <text x="403" y="340" class="number" style="font-size:13px">03</text>
+    <rect x="433" y="338" width="150" height="54" rx="13" fill="#352a50" stroke="#ba91ff" stroke-width="2"/>
+    <text x="460" y="374" class="body" style="font-size:22px; font-weight:700; fill:#caa9ff">彼此协作</text>
+    <circle cx="571" cy="339" r="15" fill="#ba91ff"/>
+    <text x="571" y="340" class="number" style="font-size:13px">04</text>
+    <text x="592" y="377" class="body" style="font-size:22px; font-weight:600">。</text>
+
+    <text x="28" y="457" class="body" style="font-size:22px; font-weight:600">开发者无需改动 DeepSeek Harness 源码，</text>
+    <text x="28" y="537" class="body" style="font-size:22px; font-weight:600">即可在</text>
+    <rect x="98" y="498" width="326" height="54" rx="13" fill="#25355b" stroke="#7d9fff" stroke-width="2"/>
+    <text x="118" y="534" class="body" style="font-size:22px; font-weight:700; fill:#9aafff">配置层选择、替换或扩展</text>
+    <circle cx="412" cy="499" r="15" fill="#7d9fff"/>
+    <text x="412" y="500" class="number" style="font-size:13px">05</text>
+    <text x="438" y="537" class="body" style="font-size:22px; font-weight:600">任一能力。</text>
+
+    <text x="28" y="600" class="small" style="font-size:16px; fill:#6683a8">https://www.deepseek.com/harness/</text>
+  </g>
+
+  <!-- Right questions panel -->
+  <g filter="url(#shadow)">
+    <rect x="912" y="274" width="920" height="682" rx="34" fill="#0d1c32" stroke="#243b5c" stroke-width="1.5"/>
+  </g>
+  <!-- Five exact-text-to-question links -->
+  <g fill="none" stroke-linecap="round" stroke-width="2.5" opacity="0.88">
+    <path d="M630 445 C760 445 860 445 976 445" stroke="#58d8ff"/>
+    <path d="M420 663 C650 663 780 551 976 551" stroke="#69e0bd"/>
+    <path d="M543 663 C720 663 820 657 976 657" stroke="#ffbc65"/>
+    <path d="M711 663 C830 663 870 763 976 763" stroke="#ba91ff"/>
+    <path d="M552 826 C740 826 850 869 976 869" stroke="#7d9fff"/>
+  </g>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="3">
+    <path d="M964 439 L976 445 L964 451" stroke="#58d8ff"/>
+    <path d="M964 545 L976 551 L964 557" stroke="#69e0bd"/>
+    <path d="M964 651 L976 657 L964 663" stroke="#ffbc65"/>
+    <path d="M964 757 L976 763 L964 769" stroke="#ba91ff"/>
+    <path d="M964 863 L976 869 L964 875" stroke="#7d9fff"/>
+  </g>
+  <g transform="translate(956 313)">
+    <text x="0" y="31" class="panel-title">由原文直接引出的 5 个问题</text>
+    <text x="0" y="66" class="small">同色编号与连线，表示“原文 → 问题”</text>
+
+    <!-- Q1 -->
+    <g transform="translate(0 104)">
+      <circle cx="44" cy="28" r="23" fill="#58d8ff" filter="url(#softGlow)"/>
+      <text x="44" y="29" class="number">01</text>
+      <rect x="86" y="0" width="696" height="88" rx="20" fill="#10233b" stroke="#315174"/>
+      <rect x="108" y="14" width="132" height="25" rx="12.5" fill="#123a56"/>
+      <text x="174" y="32" text-anchor="middle" class="keyword" fill="#62dcff">PLUGIN</text>
+      <text x="108" y="69" class="question">什么是 Cordis plugin？</text>
+    </g>
+
+    <!-- Q2 -->
+    <g transform="translate(0 210)">
+      <circle cx="44" cy="28" r="23" fill="#69e0bd"/>
+      <text x="44" y="29" class="number">02</text>
+      <rect x="86" y="0" width="696" height="88" rx="20" fill="#10233b" stroke="#315174"/>
+      <rect x="108" y="14" width="132" height="25" rx="12.5" fill="#173b3d"/>
+      <text x="174" y="32" text-anchor="middle" class="keyword" fill="#7be4c5">SERVICE</text>
+      <text x="108" y="69" class="question">什么是 Cordis service？</text>
+    </g>
+
+    <!-- Q3 -->
+    <g transform="translate(0 316)">
+      <circle cx="44" cy="28" r="23" fill="#ffbc65"/>
+      <text x="44" y="29" class="number">03</text>
+      <rect x="86" y="0" width="696" height="88" rx="20" fill="#10233b" stroke="#315174"/>
+      <rect x="108" y="14" width="132" height="25" rx="12.5" fill="#463322"/>
+      <text x="174" y="32" text-anchor="middle" class="keyword" fill="#ffc576">EVENT</text>
+      <text x="108" y="69" class="question">什么是 Cordis event？</text>
+    </g>
+
+    <!-- Q4 -->
+    <g transform="translate(0 422)">
+      <circle cx="44" cy="28" r="23" fill="#ba91ff"/>
+      <text x="44" y="29" class="number">04</text>
+      <rect x="86" y="0" width="696" height="88" rx="20" fill="#10233b" stroke="#315174"/>
+      <rect x="108" y="14" width="132" height="25" rx="12.5" fill="#352a50"/>
+      <text x="174" y="32" text-anchor="middle" class="keyword" fill="#c5a2ff">协作机制</text>
+      <text x="108" y="69" class="question">Cordis service 与 event 如何协作？</text>
+    </g>
+
+    <!-- Q5 -->
+    <g transform="translate(0 528)">
+      <circle cx="44" cy="28" r="23" fill="#7d9fff"/>
+      <text x="44" y="29" class="number">05</text>
+      <rect x="86" y="0" width="696" height="88" rx="20" fill="#10233b" stroke="#315174"/>
+      <rect x="108" y="14" width="132" height="25" rx="12.5" fill="#25355b"/>
+      <text x="174" y="32" text-anchor="middle" class="keyword" fill="#91abff">配置层</text>
+      <text x="108" y="69" class="question" style="font-size:24px">如何在配置层选择、替换或扩展任一能力？</text>
+    </g>
+  </g>
+
+  <!-- Footer -->
+  <g transform="translate(92 1015)">
+    <circle cx="8" cy="-4" r="5" fill="#52d7ff"/>
+    <text x="24" y="3" class="small" style="font-size:18px">带着这 5 个问题，从源码与实践理解插件体系</text>
+    <text x="1740" y="3" text-anchor="end" class="small" style="font-size:17px; fill:#6683a8">deepseek.com/harness</text>
+  </g>
+</svg>

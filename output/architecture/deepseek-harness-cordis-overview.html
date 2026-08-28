@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DeepSeek Harness · Cordis 核心原理</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: #020617; }
+    body {
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      font-family: "JetBrains Mono", "Alibaba PuHuiTi", "PingFang SC", "Hiragino Sans GB", monospace;
+    }
+    .canvas {
+      width: min(1800px, 100%);
+      overflow: hidden;
+      border: 1px solid #1e293b;
+      border-radius: 20px;
+      background: #020617;
+      box-shadow: 0 30px 90px rgba(0, 0, 0, .48);
+    }
+    svg { display: block; width: 100%; height: auto; }
+  </style>
+</head>
+<body>
+  <main class="canvas">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 1050" role="img" aria-labelledby="title desc">
+      <title id="title">DeepSeek Harness 围绕 Cordis 的三大特性</title>
+      <desc id="desc">Cordis 内核挂载插件，Preset 组合插件，Session 选择 Preset；SessionEvent 由 JSONL 插件写入文件系统并用于查看运行轨迹。</desc>
+      <defs>
+        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M40 0H0V40" fill="none" stroke="#1e293b" stroke-width="0.7" opacity="0.5"/>
+        </pattern>
+        <radialGradient id="headerGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0" stop-color="#0ea5e9" stop-opacity="0.17"/>
+          <stop offset="1" stop-color="#0ea5e9" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="coreFill" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#083344" stop-opacity="0.82"/>
+          <stop offset="1" stop-color="#0e7490" stop-opacity="0.2"/>
+        </linearGradient>
+        <linearGradient id="hostFill" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#064e3b" stop-opacity="0.58"/>
+          <stop offset="1" stop-color="#065f46" stop-opacity="0.16"/>
+        </linearGradient>
+        <linearGradient id="presetFill" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#2e1065" stop-opacity="0.72"/>
+          <stop offset="1" stop-color="#4c1d95" stop-opacity="0.2"/>
+        </linearGradient>
+        <linearGradient id="configFill" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#78350f" stop-opacity="0.58"/>
+          <stop offset="1" stop-color="#92400e" stop-opacity="0.16"/>
+        </linearGradient>
+        <filter id="shadow" x="-20%" y="-20%" width="140%" height="160%">
+          <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#000000" flood-opacity="0.33"/>
+        </filter>
+        <marker id="arrowSlate" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+          <polygon points="0 0, 10 4, 0 8" fill="#64748b"/>
+        </marker>
+        <marker id="arrowCyan" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+          <polygon points="0 0, 10 4, 0 8" fill="#22d3ee"/>
+        </marker>
+        <marker id="arrowAmber" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+          <polygon points="0 0, 10 4, 0 8" fill="#fbbf24"/>
+        </marker>
+        <style>
+          text { font-family: "JetBrains Mono", "Alibaba PuHuiTi", "PingFang SC", "Hiragino Sans GB", monospace; }
+          .title { font-size: 31px; font-weight: 760; fill: #f8fafc; }
+          .subtitle { font-size: 15px; font-weight: 600; fill: #94a3b8; }
+          .feature-title { font-size: 19px; font-weight: 760; fill: #f8fafc; }
+          .feature-sub { font-size: 13px; font-weight: 600; fill: #94a3b8; }
+          .panel-title { font-size: 20px; font-weight: 760; fill: #f8fafc; }
+          .layer-title { font-size: 20px; font-weight: 780; fill: #f8fafc; }
+          .box-title { font-size: 16px; font-weight: 740; fill: #f8fafc; }
+          .box-sub { font-size: 13px; font-weight: 600; fill: #94a3b8; }
+          .chip { font-size: 14px; font-weight: 700; fill: #e2e8f0; }
+          .big-chip { font-size: 15px; font-weight: 730; fill: #f8fafc; }
+          .arrow-label { font-size: 13px; font-weight: 700; fill: #94a3b8; }
+          .footer { font-size: 11px; font-weight: 550; fill: #64748b; }
+        </style>
+      </defs>
+
+      <rect width="1800" height="1050" fill="#020617"/>
+      <rect width="1800" height="1050" fill="url(#grid)"/>
+      <circle cx="1510" cy="25" r="350" fill="url(#headerGlow)"/>
+
+      <!-- Header -->
+      <circle cx="52" cy="49" r="5" fill="#22d3ee"/>
+      <circle cx="52" cy="49" r="11" fill="none" stroke="#22d3ee" stroke-opacity="0.3"/>
+      <text x="76" y="51" class="title">DeepSeek Harness：Cordis 驱动的插件、Preset 与运行轨迹</text>
+      <text x="76" y="78" class="subtitle">配置控制插件插拔 · Preset 组合不同能力 · SessionEvent 持久化为 JSONL</text>
+
+      <!-- Three official features -->
+      <g filter="url(#shadow)">
+        <rect x="34" y="104" width="552" height="94" rx="15" fill="url(#hostFill)" stroke="#34d399" stroke-width="1.5"/>
+        <circle cx="68" cy="151" r="8" fill="#34d399"/>
+        <text x="92" y="143" class="feature-title">一切皆插件</text>
+        <text x="92" y="168" class="feature-sub">模型、工具、会话、沙箱、循环、UI 均由 Plugin 提供</text>
+
+        <rect x="624" y="104" width="552" height="94" rx="15" fill="url(#presetFill)" stroke="#a78bfa" stroke-width="1.5"/>
+        <circle cx="658" cy="151" r="8" fill="#a78bfa"/>
+        <text x="682" y="143" class="feature-title">多种运行模式</text>
+        <text x="682" y="168" class="feature-sub">Preset 从插件能力中选择并组装一种 Agent 模式</text>
+
+        <rect x="1214" y="104" width="552" height="94" rx="15" fill="url(#configFill)" stroke="#fbbf24" stroke-width="1.5"/>
+        <circle cx="1248" cy="151" r="8" fill="#fbbf24"/>
+        <text x="1272" y="143" class="feature-title">每次运行可追溯</text>
+        <text x="1272" y="168" class="feature-sub">模型可见内容与工具过程进入 SessionEvent 和 JSONL</text>
+      </g>
+
+      <!-- Main panels -->
+      <rect x="34" y="222" width="370" height="780" rx="18" fill="#07101f" stroke="#334155" stroke-width="1.4"/>
+      <rect x="430" y="222" width="880" height="780" rx="18" fill="#07101f" stroke="#334155" stroke-width="1.4"/>
+      <rect x="1336" y="222" width="430" height="780" rx="18" fill="#07101f" stroke="#334155" stroke-width="1.4"/>
+
+      <!-- Structural connections behind cards -->
+      <g fill="none" stroke-linecap="round">
+        <path d="M870 825V795" stroke="#22d3ee" stroke-width="2.4" marker-end="url(#arrowCyan)"/>
+        <path d="M870 615V585" stroke="#a78bfa" stroke-width="2.4" marker-end="url(#arrowSlate)"/>
+        <path d="M870 410V380" stroke="#a78bfa" stroke-width="2.4" marker-end="url(#arrowSlate)"/>
+        <path d="M404 894H450" stroke="#fbbf24" stroke-width="2.4" marker-end="url(#arrowAmber)"/>
+        <path d="M1310 310H1360" stroke="#fbbf24" stroke-width="2.4" marker-end="url(#arrowAmber)"/>
+      </g>
+
+      <text x="890" y="814" text-anchor="middle" class="arrow-label">挂载 Plugin</text>
+      <text x="890" y="604" text-anchor="middle" class="arrow-label">组合能力</text>
+      <text x="890" y="399" text-anchor="middle" class="arrow-label">选择 Preset</text>
+
+      <!-- Left: plugin insertion/removal -->
+      <text x="58" y="260" class="panel-title">配置控制插件插拔</text>
+
+      <g filter="url(#shadow)">
+        <rect x="58" y="284" width="322" height="85" rx="12" fill="url(#configFill)" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="219" y="318" text-anchor="middle" class="box-title">cordis.yml / patch</text>
+        <text x="219" y="344" text-anchor="middle" class="box-sub">Host Plugin 配置</text>
+
+        <rect x="58" y="389" width="322" height="85" rx="12" fill="url(#presetFill)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="219" y="423" text-anchor="middle" class="box-title">agent.cordis.yml</text>
+        <text x="219" y="449" text-anchor="middle" class="box-sub">Preset Plugin 配置</text>
+
+        <path d="M219 369V383" stroke="#64748b" stroke-width="2"/>
+        <path d="M219 474V509" stroke="#64748b" stroke-width="2" marker-end="url(#arrowSlate)"/>
+
+        <rect x="58" y="513" width="322" height="96" rx="12" fill="#0f172a" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="219" y="547" text-anchor="middle" class="box-title">Entry</text>
+        <text x="219" y="573" text-anchor="middle" class="box-sub">id · name · config · disabled</text>
+        <text x="219" y="594" text-anchor="middle" class="box-sub">插入 · 修改 · 禁用 · 删除</text>
+
+        <path d="M219 609V638" stroke="#64748b" stroke-width="2" marker-end="url(#arrowSlate)"/>
+
+        <rect x="58" y="642" width="322" height="84" rx="12" fill="#0f172a" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="219" y="676" text-anchor="middle" class="box-title">Cordis Loader</text>
+        <text x="219" y="702" text-anchor="middle" class="box-sub">按 id 比较新旧 Entry</text>
+
+        <path d="M219 726V755" stroke="#64748b" stroke-width="2" marker-end="url(#arrowSlate)"/>
+
+        <rect x="58" y="759" width="322" height="84" rx="12" fill="#0f172a" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="219" y="793" text-anchor="middle" class="box-title">Plugin Fiber</text>
+        <text x="219" y="819" text-anchor="middle" class="box-sub">mount · update · dispose</text>
+
+        <path d="M219 843V869" stroke="#64748b" stroke-width="2" marker-end="url(#arrowSlate)"/>
+
+        <rect x="58" y="873" width="322" height="84" rx="12" fill="#0f172a" stroke="#fb923c" stroke-width="1.5"/>
+        <text x="219" y="907" text-anchor="middle" class="box-title">Effect 自动回卷</text>
+        <text x="219" y="933" text-anchor="middle" class="box-sub">卸载插件时清理全部注册</text>
+      </g>
+
+      <!-- Center top: Session -->
+      <g filter="url(#shadow)">
+        <rect x="450" y="248" width="840" height="132" rx="15" fill="#0f172a" stroke="#fbbf24" stroke-width="1.6"/>
+        <text x="474" y="281" class="layer-title" fill="#fde68a">Session 运行层</text>
+        <text x="1266" y="281" text-anchor="end" class="box-sub">每个 Session 选择一个 Preset</text>
+
+        <rect x="474" y="300" width="238" height="58" rx="9" fill="#451a03" stroke="#f59e0b"/>
+        <text x="593" y="325" text-anchor="middle" class="big-chip">Session A</text>
+        <text x="593" y="346" text-anchor="middle" class="box-sub">Standard</text>
+        <rect x="751" y="300" width="238" height="58" rx="9" fill="#451a03" stroke="#f59e0b"/>
+        <text x="870" y="325" text-anchor="middle" class="big-chip">Session B</text>
+        <text x="870" y="346" text-anchor="middle" class="box-sub">Code</text>
+        <rect x="1028" y="300" width="238" height="58" rx="9" fill="#451a03" stroke="#f59e0b"/>
+        <text x="1147" y="325" text-anchor="middle" class="big-chip">Session C</text>
+        <text x="1147" y="346" text-anchor="middle" class="box-sub">User Preset</text>
+      </g>
+
+      <!-- Center: Preset composition -->
+      <g filter="url(#shadow)">
+        <rect x="450" y="410" width="840" height="175" rx="15" fill="url(#presetFill)" stroke="#a78bfa" stroke-width="1.7"/>
+        <text x="474" y="443" class="layer-title">Preset 组合层</text>
+        <text x="1266" y="443" text-anchor="end" class="box-sub">平级的 Agent Plugin 组合</text>
+
+        <rect x="474" y="464" width="146" height="92" rx="10" fill="#1e1b4b" stroke="#6366f1"/>
+        <text x="547" y="499" text-anchor="middle" class="big-chip">Standard</text>
+        <text x="547" y="529" text-anchor="middle" class="box-sub">完整能力</text>
+        <rect x="635" y="464" width="146" height="92" rx="10" fill="#1e1b4b" stroke="#6366f1"/>
+        <text x="708" y="499" text-anchor="middle" class="big-chip">Code</text>
+        <text x="708" y="529" text-anchor="middle" class="box-sub">run_code</text>
+        <rect x="796" y="464" width="146" height="92" rx="10" fill="#1e1b4b" stroke="#6366f1"/>
+        <text x="869" y="499" text-anchor="middle" class="big-chip">Minimal</text>
+        <text x="869" y="529" text-anchor="middle" class="box-sub">Bash + Editor</text>
+        <rect x="957" y="464" width="146" height="92" rx="10" fill="#1e1b4b" stroke="#6366f1"/>
+        <text x="1030" y="499" text-anchor="middle" class="big-chip">Creator</text>
+        <text x="1030" y="529" text-anchor="middle" class="box-sub">Plugin 创作</text>
+        <rect x="1118" y="464" width="148" height="92" rx="10" fill="#451a03" stroke="#f59e0b" stroke-dasharray="6 4"/>
+        <text x="1192" y="499" text-anchor="middle" class="big-chip">User</text>
+        <text x="1192" y="529" text-anchor="middle" class="box-sub">自定义组合</text>
+      </g>
+
+      <!-- Center: Plugin layer -->
+      <g filter="url(#shadow)">
+        <rect x="450" y="615" width="840" height="180" rx="15" fill="url(#hostFill)" stroke="#34d399" stroke-width="1.7"/>
+        <text x="474" y="648" class="layer-title">Plugin 能力层</text>
+        <text x="1266" y="648" text-anchor="end" class="box-sub">Everything is a Plugin</text>
+
+        <rect x="474" y="670" width="145" height="46" rx="8" fill="#052e2b" stroke="#34d399"/>
+        <text x="546.5" y="699" text-anchor="middle" class="chip">Model / LLM</text>
+        <rect x="628" y="670" width="145" height="46" rx="8" fill="#052e2b" stroke="#34d399"/>
+        <text x="700.5" y="699" text-anchor="middle" class="chip">Tools</text>
+        <rect x="782" y="670" width="145" height="46" rx="8" fill="#052e2b" stroke="#34d399"/>
+        <text x="854.5" y="699" text-anchor="middle" class="chip">Skills</text>
+        <rect x="936" y="670" width="145" height="46" rx="8" fill="#052e2b" stroke="#34d399"/>
+        <text x="1008.5" y="699" text-anchor="middle" class="chip">Session / Store</text>
+        <rect x="1090" y="670" width="176" height="46" rx="8" fill="#052e2b" stroke="#34d399"/>
+        <text x="1178" y="699" text-anchor="middle" class="chip">Sandbox / Approval</text>
+
+        <rect x="474" y="730" width="176" height="46" rx="8" fill="#052e2b" stroke="#34d399"/>
+        <text x="562" y="759" text-anchor="middle" class="chip">Agent / Loop</text>
+        <rect x="660" y="730" width="176" height="46" rx="8" fill="#052e2b" stroke="#34d399"/>
+        <text x="748" y="759" text-anchor="middle" class="chip">Subagent</text>
+        <rect x="846" y="730" width="176" height="46" rx="8" fill="#052e2b" stroke="#34d399"/>
+        <text x="934" y="759" text-anchor="middle" class="chip">Scheduler</text>
+        <rect x="1032" y="730" width="110" height="46" rx="8" fill="#052e2b" stroke="#34d399"/>
+        <text x="1087" y="759" text-anchor="middle" class="chip">UI</text>
+        <rect x="1152" y="730" width="114" height="46" rx="8" fill="#052e2b" stroke="#34d399"/>
+        <text x="1209" y="759" text-anchor="middle" class="chip">Workflow</text>
+      </g>
+
+      <!-- Center bottom: Cordis core -->
+      <g filter="url(#shadow)">
+        <rect x="450" y="825" width="840" height="132" rx="15" fill="url(#coreFill)" stroke="#22d3ee" stroke-width="1.9"/>
+        <text x="474" y="858" class="layer-title" fill="#a5f3fc">CORDIS 内核</text>
+        <text x="1266" y="858" text-anchor="end" class="box-sub">插件的装载、依赖、通信与生命周期</text>
+
+        <rect x="474" y="880" width="118" height="52" rx="9" fill="#082f49" stroke="#22d3ee"/>
+        <text x="533" y="912" text-anchor="middle" class="chip">Loader</text>
+        <rect x="603" y="880" width="118" height="52" rx="9" fill="#082f49" stroke="#22d3ee"/>
+        <text x="662" y="912" text-anchor="middle" class="chip">Context</text>
+        <rect x="732" y="880" width="150" height="52" rx="9" fill="#082f49" stroke="#22d3ee"/>
+        <text x="807" y="912" text-anchor="middle" class="chip">Service + inject</text>
+        <rect x="893" y="880" width="132" height="52" rx="9" fill="#082f49" stroke="#22d3ee"/>
+        <text x="959" y="912" text-anchor="middle" class="chip">Typed Event</text>
+        <rect x="1036" y="880" width="118" height="52" rx="9" fill="#082f49" stroke="#22d3ee"/>
+        <text x="1095" y="912" text-anchor="middle" class="chip">Fiber / Effect</text>
+        <rect x="1165" y="880" width="101" height="52" rx="9" fill="#082f49" stroke="#22d3ee"/>
+        <text x="1215.5" y="912" text-anchor="middle" class="chip">Realm</text>
+      </g>
+
+      <!-- Right: trace pipeline -->
+      <text x="1360" y="260" class="panel-title">Session → 运行轨迹</text>
+      <text x="1742" y="285" text-anchor="end" class="box-sub">MODEL-VISIBLE ⇔ LOGGED</text>
+
+      <g filter="url(#shadow)">
+        <rect x="1360" y="310" width="382" height="93" rx="12" fill="#0f172a" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="1551" y="346" text-anchor="middle" class="box-title">SessionEvent</text>
+        <text x="1551" y="374" text-anchor="middle" class="box-sub">仅追加事件流</text>
+
+        <path d="M1551 403V436" stroke="#64748b" stroke-width="2.2" marker-end="url(#arrowSlate)"/>
+
+        <rect x="1360" y="440" width="382" height="93" rx="12" fill="url(#presetFill)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="1551" y="476" text-anchor="middle" class="box-title">JSONL Persistence Plugin</text>
+        <text x="1551" y="504" text-anchor="middle" class="box-sub">监听 session/event · 持久追加</text>
+
+        <path d="M1551 533V566" stroke="#64748b" stroke-width="2.2" marker-end="url(#arrowSlate)"/>
+
+        <rect x="1360" y="570" width="382" height="105" rx="12" fill="url(#configFill)" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="1551" y="607" text-anchor="middle" class="box-title">File System</text>
+        <text x="1551" y="635" text-anchor="middle" class="big-chip">session.jsonl.zstd</text>
+        <text x="1551" y="658" text-anchor="middle" class="box-sub">Session Header + Events</text>
+
+        <path d="M1551 675V708" stroke="#64748b" stroke-width="2.2" marker-end="url(#arrowSlate)"/>
+
+        <rect x="1360" y="712" width="382" height="108" rx="12" fill="#0f172a" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="1551" y="752" text-anchor="middle" class="box-title">Trajectory View</text>
+        <text x="1551" y="782" text-anchor="middle" class="box-sub">提示词 · 消息 · 工具 · 子 Agent</text>
+
+        <rect x="1360" y="850" width="117" height="58" rx="9" fill="#1e293b" stroke="#94a3b8"/>
+        <text x="1418.5" y="885" text-anchor="middle" class="chip">Resume</text>
+        <rect x="1492" y="850" width="117" height="58" rx="9" fill="#1e293b" stroke="#94a3b8"/>
+        <text x="1550.5" y="885" text-anchor="middle" class="chip">Fork</text>
+        <rect x="1624" y="850" width="118" height="58" rx="9" fill="#1e293b" stroke="#94a3b8"/>
+        <text x="1683" y="885" text-anchor="middle" class="chip">Replay</text>
+
+        <rect x="1360" y="930" width="382" height="39" rx="19" fill="#4c0519" stroke="#fb7185" stroke-dasharray="6 4"/>
+        <text x="1551" y="955" text-anchor="middle" class="chip" fill="#fecdd3">JSONL 是运行事实，不是插件配置</text>
+      </g>
+
+      <text x="34" y="1030" class="footer">Evidence: DeepSeek Harness 官网 · Yuque §1.2 / §3.1 / §3.3 / §3.4 · docs/architecture · docs/cordis-primer · vendor/cordis · session-persistence-jsonl</text>
+      <text x="1766" y="1030" text-anchor="end" class="footer">DeepSeek Harness · Cordis Core Model · 2026-08-25</text>
+    </svg>
+  </main>
+</body>
+</html>

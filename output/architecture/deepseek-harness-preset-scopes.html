@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DeepSeek Harness Preset 作用域原理</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: #020617; }
+    body {
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      color: #e2e8f0;
+      font-family: "JetBrains Mono", "Alibaba PuHuiTi", "PingFang SC", "Hiragino Sans GB", monospace;
+    }
+    .canvas {
+      width: min(1800px, 100%);
+      border: 1px solid #1e293b;
+      border-radius: 20px;
+      overflow: hidden;
+      background: #020617;
+      box-shadow: 0 30px 90px rgba(0, 0, 0, .48);
+    }
+    svg { display: block; width: 100%; height: auto; }
+  </style>
+</head>
+<body>
+  <main class="canvas">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 900" role="img" aria-labelledby="title desc">
+      <title id="title">DeepSeek Harness Agent Preset 作用域原理</title>
+      <desc id="desc">展示 Host Global、多个平级 Agent Preset、对话 Agent Scope，以及作用域查找和 Cordis Service 隔离规则。</desc>
+      <defs>
+        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M40 0H0V40" fill="none" stroke="#1e293b" stroke-width="0.7" opacity="0.52"/>
+        </pattern>
+        <radialGradient id="headerGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0" stop-color="#0ea5e9" stop-opacity="0.16"/>
+          <stop offset="1" stop-color="#0ea5e9" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="agentFill" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#083344" stop-opacity="0.84"/>
+          <stop offset="1" stop-color="#0e7490" stop-opacity="0.22"/>
+        </linearGradient>
+        <linearGradient id="presetFill" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#2e1065" stop-opacity="0.68"/>
+          <stop offset="1" stop-color="#4c1d95" stop-opacity="0.20"/>
+        </linearGradient>
+        <linearGradient id="userFill" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#78350f" stop-opacity="0.66"/>
+          <stop offset="1" stop-color="#92400e" stop-opacity="0.18"/>
+        </linearGradient>
+        <linearGradient id="hostFill" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#064e3b" stop-opacity="0.56"/>
+          <stop offset="1" stop-color="#065f46" stop-opacity="0.16"/>
+        </linearGradient>
+        <filter id="shadow" x="-20%" y="-20%" width="140%" height="160%">
+          <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#000000" flood-opacity="0.32"/>
+        </filter>
+        <marker id="arrowSlate" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+          <polygon points="0 0, 9 3.5, 0 7" fill="#64748b"/>
+        </marker>
+        <marker id="arrowCyan" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+          <polygon points="0 0, 9 3.5, 0 7" fill="#22d3ee"/>
+        </marker>
+        <style>
+          text { font-family: "JetBrains Mono", "Alibaba PuHuiTi", "PingFang SC", "Hiragino Sans GB", monospace; }
+          .title { font-size: 31px; font-weight: 750; fill: #f8fafc; }
+          .subtitle { font-size: 15px; font-weight: 550; fill: #94a3b8; }
+          .layer-label { font-size: 19px; font-weight: 750; letter-spacing: .5px; }
+          .agent-title { font-size: 17px; font-weight: 750; fill: #f8fafc; }
+          .preset-title { font-size: 18px; font-weight: 750; fill: #f8fafc; }
+          .badge { font-size: 12px; font-weight: 750; letter-spacing: .8px; }
+          .chip { font-size: 14px; font-weight: 650; fill: #e0e7ff; }
+          .host-chip { font-size: 16px; font-weight: 700; fill: #d1fae5; }
+          .side-title { font-size: 20px; font-weight: 750; fill: #f8fafc; }
+          .side-section { font-size: 16px; font-weight: 750; fill: #f8fafc; }
+          .side-step { font-size: 16px; font-weight: 750; fill: #e2e8f0; }
+          .side-note { font-size: 13px; font-weight: 600; fill: #94a3b8; }
+        </style>
+      </defs>
+
+      <rect width="1800" height="900" fill="#020617"/>
+      <rect width="1800" height="900" fill="url(#grid)"/>
+      <circle cx="1560" cy="40" r="360" fill="url(#headerGlow)"/>
+
+      <!-- Header -->
+      <circle cx="52" cy="49" r="5" fill="#22d3ee"/>
+      <circle cx="52" cy="49" r="11" fill="none" stroke="#22d3ee" stroke-opacity="0.28"/>
+      <text x="76" y="51" class="title">Agent Preset：同一 Host 下的作用域化插件组合</text>
+      <text x="76" y="77" class="subtitle">Host 全局共享 · Preset 平级隔离 · 对话按所选 Preset 组装能力</text>
+
+      <!-- Main architecture and rule panel -->
+      <rect x="34" y="104" width="1326" height="752" rx="18" fill="#07101f" stroke="#334155" stroke-width="1.4"/>
+      <rect x="1384" y="104" width="382" height="752" rx="18" fill="#07101f" stroke="#334155" stroke-width="1.4"/>
+
+      <!-- Relationship lines -->
+      <g fill="none" stroke-linecap="round">
+        <path d="M147 229V294" stroke="#22d3ee" stroke-width="2.2" stroke-dasharray="6 5" marker-end="url(#arrowCyan)"/>
+        <path d="M267 229V294" stroke="#22d3ee" stroke-width="2.2" stroke-dasharray="6 5" marker-end="url(#arrowCyan)"/>
+        <path d="M457 229V294" stroke="#22d3ee" stroke-width="2.2" stroke-dasharray="6 5" marker-end="url(#arrowCyan)"/>
+        <path d="M712 229V294" stroke="#22d3ee" stroke-width="2.2" stroke-dasharray="6 5" marker-end="url(#arrowCyan)"/>
+        <path d="M967 229V294" stroke="#22d3ee" stroke-width="2.2" stroke-dasharray="6 5" marker-end="url(#arrowCyan)"/>
+        <path d="M1222 229V294" stroke="#22d3ee" stroke-width="2.2" stroke-dasharray="6 5" marker-end="url(#arrowCyan)"/>
+
+        <path d="M202 555V590H1242V625" stroke="#64748b" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#arrowSlate)"/>
+        <path d="M457 555V590" stroke="#64748b" stroke-width="1.8" stroke-dasharray="7 5"/>
+        <path d="M712 555V590" stroke="#64748b" stroke-width="1.8" stroke-dasharray="7 5"/>
+        <path d="M967 555V590" stroke="#64748b" stroke-width="1.8" stroke-dasharray="7 5"/>
+        <path d="M1222 555V590" stroke="#64748b" stroke-width="1.8" stroke-dasharray="7 5"/>
+      </g>
+
+      <!-- Conversation / Agent Scope -->
+      <text x="58" y="137" class="layer-label" fill="#22d3ee">对话</text>
+      <text x="1308" y="137" text-anchor="end" class="subtitle">每个对话一个 Agent Scope</text>
+
+      <g filter="url(#shadow)">
+        <rect x="82" y="158" width="130" height="71" rx="10" fill="url(#agentFill)" stroke="#22d3ee" stroke-width="1.6"/>
+        <text x="147" y="201" text-anchor="middle" class="agent-title">对话 A</text>
+        <rect x="222" y="158" width="90" height="71" rx="10" fill="url(#agentFill)" stroke="#22d3ee" stroke-width="1.6"/>
+        <text x="267" y="201" text-anchor="middle" class="agent-title">对话 B</text>
+        <rect x="392" y="158" width="130" height="71" rx="10" fill="url(#agentFill)" stroke="#22d3ee" stroke-width="1.6"/>
+        <text x="457" y="201" text-anchor="middle" class="agent-title">对话 C</text>
+        <rect x="647" y="158" width="130" height="71" rx="10" fill="url(#agentFill)" stroke="#22d3ee" stroke-width="1.6"/>
+        <text x="712" y="201" text-anchor="middle" class="agent-title">对话 D</text>
+        <rect x="902" y="158" width="130" height="71" rx="10" fill="url(#agentFill)" stroke="#22d3ee" stroke-width="1.6"/>
+        <text x="967" y="201" text-anchor="middle" class="agent-title">对话 E</text>
+        <rect x="1157" y="158" width="130" height="71" rx="10" fill="url(#agentFill)" stroke="#22d3ee" stroke-width="1.6"/>
+        <text x="1222" y="201" text-anchor="middle" class="agent-title">对话 F</text>
+      </g>
+
+      <!-- Agent Preset layer -->
+      <text x="58" y="280" class="layer-label" fill="#a78bfa">Agent Preset</text>
+      <text x="1308" y="280" text-anchor="end" class="subtitle">多个平级子作用域</text>
+
+      <!-- Standard -->
+      <g filter="url(#shadow)">
+        <rect x="82" y="306" width="240" height="249" rx="13" fill="url(#presetFill)" stroke="#a78bfa" stroke-width="1.6"/>
+        <rect x="98" y="324" width="50" height="22" rx="11" fill="#312e81" stroke="#6366f1"/>
+        <text x="123" y="340" text-anchor="middle" class="badge" fill="#c4b5fd">内置</text>
+        <text x="98" y="379" class="preset-title">Standard</text>
+        <rect x="98" y="401" width="96" height="34" rx="7" fill="#1e1b4b" stroke="#6366f1"/>
+        <text x="146" y="423" text-anchor="middle" class="chip">Persona</text>
+        <rect x="202" y="401" width="104" height="34" rx="7" fill="#1e1b4b" stroke="#6366f1"/>
+        <text x="254" y="423" text-anchor="middle" class="chip">Bash + FS</text>
+        <rect x="98" y="445" width="96" height="34" rx="7" fill="#1e1b4b" stroke="#6366f1"/>
+        <text x="146" y="467" text-anchor="middle" class="chip">Skills</text>
+        <rect x="202" y="445" width="104" height="34" rx="7" fill="#1e1b4b" stroke="#6366f1"/>
+        <text x="254" y="467" text-anchor="middle" class="chip">Plan</text>
+        <rect x="98" y="489" width="208" height="38" rx="7" fill="#1e1b4b" stroke="#6366f1"/>
+        <text x="202" y="514" text-anchor="middle" class="chip">Subagent · Web</text>
+      </g>
+
+      <!-- PTC -->
+      <g filter="url(#shadow)">
+        <rect x="337" y="306" width="240" height="249" rx="13" fill="url(#presetFill)" stroke="#a78bfa" stroke-width="1.6"/>
+        <rect x="353" y="324" width="50" height="22" rx="11" fill="#312e81" stroke="#6366f1"/>
+        <text x="378" y="340" text-anchor="middle" class="badge" fill="#c4b5fd">内置</text>
+        <text x="353" y="379" class="preset-title">PTC / Code</text>
+        <rect x="353" y="401" width="208" height="38" rx="7" fill="#1e1b4b" stroke="#6366f1"/>
+        <text x="457" y="426" text-anchor="middle" class="chip">Standard 能力</text>
+        <rect x="353" y="450" width="208" height="38" rx="7" fill="#1e1b4b" stroke="#6366f1"/>
+        <text x="457" y="475" text-anchor="middle" class="chip">Code Mode</text>
+        <rect x="353" y="499" width="208" height="38" rx="7" fill="#1e1b4b" stroke="#6366f1"/>
+        <text x="457" y="524" text-anchor="middle" class="chip">run_code</text>
+      </g>
+
+      <!-- Minimal -->
+      <g filter="url(#shadow)">
+        <rect x="592" y="306" width="240" height="249" rx="13" fill="url(#presetFill)" stroke="#a78bfa" stroke-width="1.6"/>
+        <rect x="608" y="324" width="50" height="22" rx="11" fill="#312e81" stroke="#6366f1"/>
+        <text x="633" y="340" text-anchor="middle" class="badge" fill="#c4b5fd">内置</text>
+        <text x="608" y="379" class="preset-title">Minimal</text>
+        <rect x="608" y="401" width="208" height="38" rx="7" fill="#1e1b4b" stroke="#6366f1"/>
+        <text x="712" y="426" text-anchor="middle" class="chip">Persona</text>
+        <rect x="608" y="450" width="208" height="38" rx="7" fill="#1e1b4b" stroke="#6366f1"/>
+        <text x="712" y="475" text-anchor="middle" class="chip">Bash</text>
+        <rect x="608" y="499" width="208" height="38" rx="7" fill="#1e1b4b" stroke="#6366f1"/>
+        <text x="712" y="524" text-anchor="middle" class="chip">文件编辑</text>
+      </g>
+
+      <!-- Creator -->
+      <g filter="url(#shadow)">
+        <rect x="847" y="306" width="240" height="249" rx="13" fill="url(#presetFill)" stroke="#a78bfa" stroke-width="1.6"/>
+        <rect x="863" y="324" width="50" height="22" rx="11" fill="#312e81" stroke="#6366f1"/>
+        <text x="888" y="340" text-anchor="middle" class="badge" fill="#c4b5fd">内置</text>
+        <text x="863" y="379" class="preset-title">Creator / Cordis</text>
+        <rect x="863" y="401" width="208" height="38" rx="7" fill="#1e1b4b" stroke="#6366f1"/>
+        <text x="967" y="426" text-anchor="middle" class="chip">Standard 能力</text>
+        <rect x="863" y="450" width="208" height="38" rx="7" fill="#1e1b4b" stroke="#6366f1"/>
+        <text x="967" y="475" text-anchor="middle" class="chip">Cordis 工具</text>
+        <rect x="863" y="499" width="208" height="38" rx="7" fill="#1e1b4b" stroke="#6366f1"/>
+        <text x="967" y="524" text-anchor="middle" class="chip">插件创作</text>
+      </g>
+
+      <!-- User preset -->
+      <g filter="url(#shadow)">
+        <rect x="1102" y="306" width="240" height="249" rx="13" fill="url(#userFill)" stroke="#fbbf24" stroke-width="1.8" stroke-dasharray="8 5"/>
+        <rect x="1118" y="324" width="50" height="22" rx="11" fill="#451a03" stroke="#f59e0b"/>
+        <text x="1143" y="340" text-anchor="middle" class="badge" fill="#fde68a">用户</text>
+        <text x="1118" y="379" class="preset-title">自定义 Preset</text>
+        <rect x="1118" y="401" width="208" height="38" rx="7" fill="#451a03" stroke="#f59e0b"/>
+        <text x="1222" y="426" text-anchor="middle" class="chip">agent.cordis.yml</text>
+        <rect x="1118" y="450" width="208" height="38" rx="7" fill="#451a03" stroke="#f59e0b"/>
+        <text x="1222" y="475" text-anchor="middle" class="chip">自定义插件</text>
+        <rect x="1118" y="499" width="208" height="38" rx="7" fill="#451a03" stroke="#f59e0b"/>
+        <text x="1222" y="524" text-anchor="middle" class="chip">Skills</text>
+      </g>
+
+      <!-- Host Global -->
+      <text x="58" y="626" class="layer-label" fill="#34d399">Host Global</text>
+      <text x="1308" y="626" text-anchor="end" class="subtitle">全局共享插件组合</text>
+      <g filter="url(#shadow)">
+        <rect x="82" y="646" width="1260" height="178" rx="14" fill="url(#hostFill)" stroke="#34d399" stroke-width="1.7"/>
+        <text x="106" y="681" class="preset-title">共享基础能力</text>
+
+        <rect x="106" y="703" width="180" height="76" rx="9" fill="#052e2b" stroke="#34d399"/>
+        <text x="196" y="747" text-anchor="middle" class="host-chip">Tools / Prompt</text>
+        <rect x="298" y="703" width="180" height="76" rx="9" fill="#052e2b" stroke="#34d399"/>
+        <text x="388" y="747" text-anchor="middle" class="host-chip">Agent / Loop</text>
+        <rect x="490" y="703" width="180" height="76" rx="9" fill="#052e2b" stroke="#34d399"/>
+        <text x="580" y="747" text-anchor="middle" class="host-chip">Model / LLM</text>
+        <rect x="682" y="703" width="180" height="76" rx="9" fill="#052e2b" stroke="#34d399"/>
+        <text x="772" y="747" text-anchor="middle" class="host-chip">Session / Store</text>
+        <rect x="874" y="703" width="180" height="76" rx="9" fill="#052e2b" stroke="#34d399"/>
+        <text x="964" y="747" text-anchor="middle" class="host-chip">Sandbox / Approval</text>
+        <rect x="1066" y="703" width="252" height="76" rx="9" fill="#052e2b" stroke="#34d399"/>
+        <text x="1192" y="747" text-anchor="middle" class="host-chip">FS / Process / Web</text>
+      </g>
+
+      <!-- Right panel: essential rules only -->
+      <text x="1410" y="141" class="side-title">查找与隔离</text>
+
+      <rect x="1410" y="165" width="330" height="343" rx="13" fill="#0f172a" stroke="#334155"/>
+      <text x="1430" y="198" class="side-section">作用域查找</text>
+      <text x="1430" y="219" class="side-note">Tools · Prompt · Skills</text>
+
+      <rect x="1430" y="266" width="290" height="64" rx="9" fill="rgba(76,29,149,.45)" stroke="#a78bfa" stroke-width="1.5"/>
+      <text x="1575" y="305" text-anchor="middle" class="side-step">1 · Preset Scope</text>
+      <path d="M1575 334V365" stroke="#64748b" stroke-width="2" marker-end="url(#arrowSlate)"/>
+
+      <rect x="1430" y="369" width="290" height="64" rx="9" fill="rgba(6,78,59,.45)" stroke="#34d399" stroke-width="1.5"/>
+      <text x="1575" y="408" text-anchor="middle" class="side-step">2 · Host Global</text>
+      <text x="1575" y="487" text-anchor="middle" class="side-note">就近优先 · 同名覆盖</text>
+
+      <rect x="1410" y="526" width="330" height="298" rx="13" fill="#0f172a" stroke="#334155"/>
+      <text x="1430" y="559" class="side-section">Cordis Service</text>
+      <text x="1430" y="580" class="side-note">Service 不自动沿作用域链查找</text>
+
+      <rect x="1430" y="604" width="290" height="55" rx="9" fill="rgba(6,78,59,.42)" stroke="#34d399"/>
+      <text x="1575" y="638" text-anchor="middle" class="side-step">共享 Service → Host</text>
+
+      <rect x="1430" y="677" width="290" height="65" rx="9" fill="rgba(76,29,149,.42)" stroke="#a78bfa"/>
+      <text x="1575" y="704" text-anchor="middle" class="side-step">Preset 专属 Service</text>
+      <text x="1575" y="727" text-anchor="middle" class="side-note">group + isolate</text>
+
+      <rect x="1430" y="760" width="290" height="43" rx="9" fill="rgba(136,19,55,.34)" stroke="#fb7185" stroke-dasharray="6 4"/>
+      <text x="1575" y="787" text-anchor="middle" class="side-step" fill="#fecdd3">禁止发布 root Service</text>
+
+      <text x="34" y="884" class="side-note">DeepSeek Harness · Preset Scope Model · 2026-08-25</text>
+    </svg>
+  </main>
+</body>
+</html>

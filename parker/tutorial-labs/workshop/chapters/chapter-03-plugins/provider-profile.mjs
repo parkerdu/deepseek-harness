@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
 import { existsSync } from 'node:fs'
-import { homedir, tmpdir } from 'node:os'
+import { homedir } from 'node:os'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
@@ -8,7 +8,7 @@ import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
 const scriptDirectory = dirname(fileURLToPath(import.meta.url))
 const repositoryRoot = resolve(scriptDirectory, '../../../../..')
 const defaultPatchPath = resolve(homedir(), '.dsh/profiles/web/cordis.patch.yml')
-const defaultStatePath = resolve(tmpdir(), `dsh-workshop-provider-hmr-${process.getuid?.() ?? 'user'}.json`)
+const defaultStatePath = resolve(homedir(), '.dsh/.workshop-state/provider-hmr.json')
 const startMarker = '# >>> dsh-workshop:provider-hmr >>>'
 const endMarker = '# <<< dsh-workshop:provider-hmr <<<'
 
@@ -50,6 +50,28 @@ function appendExperiment(originalContent, values) {
     : originalContent
   const prefix = prefixContent.length === 0 || prefixContent.endsWith('\n') ? prefixContent : `${prefixContent}\n`
   return `${prefix}${prefix.length === 0 ? '' : '\n'}${experimentPatch(values)}`
+}
+
+function recoverMarkedExperiment(current) {
+  const startCount = current.split(startMarker).length - 1
+  const endCount = current.split(endMarker).length - 1
+  if (startCount === 0 && endCount === 0) return undefined
+  if (startCount !== 1 || endCount !== 1) {
+    throw new Error('Provider 实验区块标记不完整或重复，无法确认 Workshop 写入的范围；拒绝自动清理。')
+  }
+
+  const knownBlocks = [experimentPatch(before), experimentPatch(after)]
+  const block = knownBlocks.find(candidate => current.includes(candidate))
+  if (!block) {
+    throw new Error('Provider 实验区块内容与 Workshop 生成结果不一致，无法确认配置归属；拒绝自动清理。')
+  }
+
+  const recovered = current.replace(block, '')
+  const semanticLines = recovered.split('\n')
+    .filter(line => line.trim() !== '' && !line.trimStart().startsWith('#'))
+  if (semanticLines.length > 0) return recovered
+  const comments = recovered.trimEnd()
+  return `${comments}${comments.length === 0 ? '' : '\n'}[]\n`
 }
 
 async function atomicWrite(path, content) {
@@ -141,8 +163,18 @@ export async function updateV2({ patchPath = defaultPatchPath, statePath = defau
 
 export async function cleanup({ patchPath = defaultPatchPath, statePath = defaultStatePath } = {}) {
   if (!existsSync(statePath)) {
+    if (existsSync(patchPath)) {
+      const current = await readFile(patchPath, 'utf8')
+      const recovered = recoverMarkedExperiment(current)
+      if (recovered !== undefined) {
+        await atomicWrite(patchPath, recovered)
+        console.log(`已移除 ${patchPath} 中遗留的 Provider Workshop 配置`)
+        console.log('Web 仍在运行时，Cordis 会卸载模拟 Provider 与 Consumer。')
+        return { cleaned: true, recovery: 'marked-block' }
+      }
+    }
     console.log('没有待恢复的 Provider Workshop 配置。')
-    return
+    return { cleaned: false, recovery: 'none' }
   }
   const state = await readState(statePath)
   await assertCurrent(state, patchPath)
@@ -151,6 +183,7 @@ export async function cleanup({ patchPath = defaultPatchPath, statePath = defaul
   await rm(statePath, { force: true })
   console.log(`已恢复 ${patchPath}`)
   console.log('Web 仍在运行时，Cordis 会卸载模拟 Provider 与 Consumer。')
+  return { cleaned: true, recovery: 'snapshot' }
 }
 
 async function main() {

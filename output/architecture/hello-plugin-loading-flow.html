@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hello Plugin 从配置到运行</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { width: 1848px; height: 1080px; margin: 0; overflow: hidden; background: #020617; }
+    body { font-family: "JetBrains Mono", "Alibaba PuHuiTi", "PingFang SC", "Hiragino Sans GB", monospace; }
+    svg { display: block; width: 1848px; height: 1080px; }
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1848 1080" role="img" aria-labelledby="title desc">
+    <title id="title">Hello Plugin 从配置到运行</title>
+    <desc id="desc">cordis.yml 通过命令行 patch 进入最终配置树，Cordis Loader 读取 Entry 并挂载插件 Fiber，随后 Cordis 调用 apply ctx。</desc>
+    <defs>
+      <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+        <path d="M40 0H0V40" fill="none" stroke="#1e293b" stroke-width="0.7" opacity="0.55" />
+      </pattern>
+      <radialGradient id="glow" cx="83%" cy="4%" r="58%">
+        <stop offset="0" stop-color="#0ea5e9" stop-opacity="0.2" />
+        <stop offset="1" stop-color="#0ea5e9" stop-opacity="0" />
+      </radialGradient>
+      <linearGradient id="cyanFill" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#083344" stop-opacity="0.92" />
+        <stop offset="1" stop-color="#155e75" stop-opacity="0.25" />
+      </linearGradient>
+      <linearGradient id="amberFill" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#451a03" stop-opacity="0.94" />
+        <stop offset="1" stop-color="#92400e" stop-opacity="0.24" />
+      </linearGradient>
+      <linearGradient id="violetFill" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#2e1065" stop-opacity="0.92" />
+        <stop offset="1" stop-color="#5b21b6" stop-opacity="0.22" />
+      </linearGradient>
+      <linearGradient id="greenFill" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#052e2b" stop-opacity="0.95" />
+        <stop offset="1" stop-color="#047857" stop-opacity="0.22" />
+      </linearGradient>
+      <filter id="shadow" x="-20%" y="-30%" width="140%" height="170%">
+        <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#000000" flood-opacity="0.4" />
+      </filter>
+      <filter id="softGlow" x="-60%" y="-60%" width="220%" height="220%">
+        <feGaussianBlur stdDeviation="8" />
+      </filter>
+      <marker id="arrowCyan" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto">
+        <polygon points="0 0, 12 5, 0 10" fill="#22d3ee" />
+      </marker>
+      <marker id="arrowSlate" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto">
+        <polygon points="0 0, 12 5, 0 10" fill="#64748b" />
+      </marker>
+      <style>
+        text { font-family: "JetBrains Mono", "Alibaba PuHuiTi", "PingFang SC", "Hiragino Sans GB", monospace; }
+        .title { fill: #f8fafc; font-size: 36px; font-weight: 780; letter-spacing: -1px; }
+        .subtitle { fill: #94a3b8; font-size: 17px; font-weight: 600; }
+        .layer { fill: #64748b; font-size: 13px; font-weight: 760; letter-spacing: 2px; }
+        .step { font-size: 13px; font-weight: 800; letter-spacing: 1.5px; }
+        .node-title { fill: #f8fafc; font-size: 24px; font-weight: 760; }
+        .node-sub { fill: #a8b7c8; font-size: 15px; font-weight: 600; }
+        .node-code { fill: #e2e8f0; font-size: 18px; font-weight: 720; }
+        .arrow-label { fill: #94a3b8; font-size: 13px; font-weight: 700; }
+        .summary { fill: #dbeafe; font-size: 18px; font-weight: 680; }
+        .summary-accent { fill: #67e8f9; font-size: 18px; font-weight: 800; }
+        .footer { fill: #475569; font-size: 11px; font-weight: 600; letter-spacing: 1px; }
+      </style>
+    </defs>
+
+    <rect width="1848" height="1080" fill="#020617" />
+    <rect width="1848" height="1080" fill="url(#grid)" />
+    <rect width="1848" height="1080" fill="url(#glow)" />
+
+    <circle cx="58" cy="58" r="7" fill="#22d3ee" />
+    <circle cx="58" cy="58" r="16" fill="#22d3ee" opacity="0.15" filter="url(#softGlow)" />
+    <text x="88" y="61" class="title">Hello Plugin 是怎样运行起来的？</text>
+    <text x="88" y="94" class="subtitle">配置补丁先进入最终 Entry 树，再由 Cordis 把声明变成运行中的插件实例</text>
+    <rect x="1540" y="44" width="246" height="38" rx="19" fill="#0f172a" stroke="#334155" />
+    <text x="1663" y="68" text-anchor="middle" fill="#67e8f9" font-size="12" font-weight="760" letter-spacing="1.4">HELLO PLUGIN · 01</text>
+
+    <!-- Layer backgrounds -->
+    <rect x="42" y="152" width="1764" height="240" rx="22" fill="#07101f" stroke="#1e3a5f" />
+    <rect x="42" y="422" width="1764" height="240" rx="22" fill="#07101f" stroke="#312e81" />
+    <rect x="42" y="692" width="1764" height="240" rx="22" fill="#07101f" stroke="#14532d" />
+    <text x="72" y="183" class="layer">01 · 配置输入</text>
+    <text x="72" y="453" class="layer">02 · 配置组合</text>
+    <text x="72" y="723" class="layer">03 · CORDIS 运行时</text>
+
+    <!-- Arrows behind nodes -->
+    <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M800 276H1018" stroke="#22d3ee" stroke-width="3" marker-end="url(#arrowCyan)" />
+      <path d="M1310 352V466" stroke="#64748b" stroke-width="3" marker-end="url(#arrowSlate)" />
+      <path d="M1018 546H800" stroke="#64748b" stroke-width="3" marker-end="url(#arrowSlate)" />
+      <path d="M490 622V736" stroke="#64748b" stroke-width="3" marker-end="url(#arrowSlate)" />
+      <path d="M800 816H1018" stroke="#22d3ee" stroke-width="3" marker-end="url(#arrowCyan)" />
+    </g>
+    <text x="909" y="263" text-anchor="middle" class="arrow-label">作为 --patch 输入</text>
+    <text x="1333" y="414" class="arrow-label">叠加各配置层</text>
+    <text x="909" y="533" text-anchor="middle" class="arrow-label">读取 Entry</text>
+    <text x="514" y="684" class="arrow-label">ctx.plugin(...)</text>
+    <text x="909" y="803" text-anchor="middle" class="arrow-label">进入 LOADING</text>
+
+    <!-- 01 -->
+    <g filter="url(#shadow)">
+      <rect x="180" y="202" width="620" height="150" rx="16" fill="#0f172a" />
+      <rect x="180" y="202" width="620" height="150" rx="16" fill="url(#cyanFill)" stroke="#22d3ee" stroke-width="2" />
+      <rect x="204" y="225" width="72" height="28" rx="14" fill="#164e63" />
+      <text x="240" y="244" text-anchor="middle" class="step" fill="#67e8f9">STEP 01</text>
+      <text x="204" y="291" class="node-title">cordis.yml：insert hello Entry</text>
+      <text x="204" y="323" class="node-sub">声明稳定 id 与本地插件模块路径</text>
+    </g>
+
+    <!-- 02 -->
+    <g filter="url(#shadow)">
+      <rect x="1018" y="202" width="620" height="150" rx="16" fill="#0f172a" />
+      <rect x="1018" y="202" width="620" height="150" rx="16" fill="url(#amberFill)" stroke="#fbbf24" stroke-width="2" />
+      <rect x="1042" y="225" width="72" height="28" rx="14" fill="#78350f" />
+      <text x="1078" y="244" text-anchor="middle" class="step" fill="#fde68a">STEP 02</text>
+      <text x="1042" y="291" class="node-code">pnpm dsh web --patch ./cordis.yml</text>
+      <text x="1042" y="323" class="node-sub">只为本次 Web 启动追加临时覆盖层</text>
+    </g>
+
+    <!-- 03 -->
+    <g filter="url(#shadow)">
+      <rect x="1018" y="472" width="620" height="150" rx="16" fill="#0f172a" />
+      <rect x="1018" y="472" width="620" height="150" rx="16" fill="url(#violetFill)" stroke="#a78bfa" stroke-width="2" />
+      <rect x="1042" y="495" width="72" height="28" rx="14" fill="#4c1d95" />
+      <text x="1078" y="514" text-anchor="middle" class="step" fill="#ddd6fe">STEP 03</text>
+      <text x="1042" y="561" class="node-title">最终生效的 Entry 配置树</text>
+      <text x="1042" y="593" class="node-sub">Bundle、Profile、用户层与临时 Patch 完成组合</text>
+    </g>
+
+    <!-- 04 -->
+    <g filter="url(#shadow)">
+      <rect x="180" y="472" width="620" height="150" rx="16" fill="#0f172a" />
+      <rect x="180" y="472" width="620" height="150" rx="16" fill="url(#cyanFill)" stroke="#22d3ee" stroke-width="2" />
+      <rect x="204" y="495" width="72" height="28" rx="14" fill="#164e63" />
+      <text x="240" y="514" text-anchor="middle" class="step" fill="#67e8f9">STEP 04</text>
+      <text x="204" y="561" class="node-title">Cordis Loader</text>
+      <text x="204" y="593" class="node-sub">解析 Entry.name，并把模块挂载为子插件</text>
+    </g>
+
+    <!-- 05 -->
+    <g filter="url(#shadow)">
+      <rect x="180" y="742" width="620" height="150" rx="16" fill="#0f172a" />
+      <rect x="180" y="742" width="620" height="150" rx="16" fill="url(#greenFill)" stroke="#34d399" stroke-width="2" />
+      <rect x="204" y="765" width="72" height="28" rx="14" fill="#065f46" />
+      <text x="240" y="784" text-anchor="middle" class="step" fill="#a7f3d0">STEP 05</text>
+      <text x="204" y="831" class="node-title">运行中的 Plugin Fiber</text>
+      <text x="204" y="863" class="node-sub">一个已挂载插件实例的生命周期句柄</text>
+    </g>
+
+    <!-- 06 -->
+    <g filter="url(#shadow)">
+      <rect x="1018" y="742" width="620" height="150" rx="16" fill="#0f172a" />
+      <rect x="1018" y="742" width="620" height="150" rx="16" fill="url(#greenFill)" stroke="#34d399" stroke-width="2" />
+      <rect x="1042" y="765" width="72" height="28" rx="14" fill="#065f46" />
+      <text x="1078" y="784" text-anchor="middle" class="step" fill="#a7f3d0">STEP 06</text>
+      <text x="1042" y="831" class="node-code">Cordis 调用 apply(ctx)</text>
+      <text x="1042" y="863" class="node-sub">插件进入 ACTIVE，开始向当前 Context 贡献能力</text>
+    </g>
+
+    <!-- Summary -->
+    <rect x="180" y="968" width="1458" height="66" rx="14" fill="#071a2d" stroke="#1d4ed8" stroke-width="1.5" />
+    <circle cx="220" cy="1001" r="6" fill="#22d3ee" />
+    <text x="244" y="1007" class="summary">关键结论：配置文件只负责声明组合；</text>
+    <text x="622" y="1007" class="summary-accent">Loader + Cordis</text>
+    <text x="805" y="1007" class="summary">才负责把 Entry 变成真正运行的插件。</text>
+    <text x="924" y="1062" text-anchor="middle" class="footer">DEEPSEEK HARNESS · CORDIS PLUGIN LOADING FLOW</text>
+  </svg>
+</body>
+</html>

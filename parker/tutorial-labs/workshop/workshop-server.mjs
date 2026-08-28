@@ -66,7 +66,7 @@ async function executeAction(request, response, actionId) {
   }
   const action = actions.get(actionId)
   if (!action) {
-    sendJson(response, 404, { error: `未知步骤动作：${actionId}` })
+    sendJson(response, 404, { error: `未知步骤动作：${actionId}。页面内容与 Workshop 服务版本不一致，请重新启动 Workshop 服务。` })
     return
   }
   const body = await readJson(request)
