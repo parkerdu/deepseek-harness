@@ -6,9 +6,9 @@ describe('package contract', () => {
     const manifest = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'))
     const patch = await readFile(new URL('../cordis.patch.yml', import.meta.url), 'utf8')
 
-    expect(manifest.name).toBe('dsh-running-ant')
+    expect(manifest.name).toBe('@alipay/ui-running-ant')
     expect(manifest.dsh.bundle.patch).toBe('./cordis.patch.yml')
     expect(manifest.dsh.client.platform).toBe('web')
-    expect(patch).toContain('name: dsh-running-ant')
+    expect(patch).toContain("name: '@alipay/ui-running-ant'")
   })
 })

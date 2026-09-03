@@ -2,4 +2,4 @@
 # the conversation input-dock slot before registering its UI contribution.
 - insert:
     - id: ui-running-ant
-      name: dsh-running-ant
+      name: '@alipay/ui-running-ant'

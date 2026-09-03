@@ -1,4 +1,4 @@
-# dsh-running-ant
+# @alipay/ui-running-ant
 
 DeepSeek Harness Web 的纯展示插件：当前会话生成期间，一只蓝色蚂蚁在输入框上方往返爬行；生成停止后自动消失。
 
@@ -9,8 +9,8 @@ DeepSeek Harness Web 的纯展示插件：当前会话生成期间，一只蓝�
 ```sh
 cd /Users/parker/Documents/git/agents/deepseek-harness/parker/ds_plugin
 pnpm install
-pnpm --filter dsh-running-ant build
-pnpm --filter dsh-running-ant test
+pnpm --filter '@alipay/ui-running-ant' build
+pnpm --filter '@alipay/ui-running-ant' test
 pnpm pack:running-ant
 ```
 
@@ -20,7 +20,7 @@ pnpm pack:running-ant
 cd /Users/parker/Documents/git/agents/deepseek-harness
 
 pnpm dsh plugin --profile web add \
-  file:/Users/parker/Documents/git/agents/deepseek-harness/parker/ds_plugin/dist/dsh-running-ant-0.1.0.tgz
+  file:/Users/parker/Documents/git/agents/deepseek-harness/parker/ds_plugin/dist/alipay-ui-running-ant-0.1.2.tgz
 ```
 
 检查最终 Cordis 组合：
@@ -32,13 +32,13 @@ pnpm dsh --profile web --dump-config
 输出中应出现：
 
 ```yaml
-# == dsh-running-ant
+# == @alipay/ui-running-ant
 - id: ui-running-ant
-  name: dsh-running-ant
+  name: '@alipay/ui-running-ant'
 ```
 
 ## 卸载
 
 ```sh
-pnpm dsh plugin --profile web remove dsh-running-ant
+dsh plugin --profile web remove @alipay/ui-running-ant
 ```

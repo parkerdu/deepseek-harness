@@ -1,7 +1,7 @@
 {
-  "name": "dsh-running-ant",
+  "name": "@alipay/ui-running-ant",
   "description": "Animated blue ant running indicator for the DeepSeek Harness Web composer",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "type": "module",
   "packageManager": "pnpm@11.7.0",
   "engines": {

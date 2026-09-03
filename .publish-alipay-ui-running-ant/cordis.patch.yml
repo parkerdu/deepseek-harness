@@ -1,0 +1,5 @@
+# Install this package as an independent DSH bundle. The browser half waits for
+# the conversation input-dock slot before registering its UI contribution.
+- insert:
+    - id: ui-running-ant
+      name: dsh-running-ant

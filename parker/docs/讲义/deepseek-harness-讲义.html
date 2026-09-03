@@ -1,0 +1,997 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="从官方资料和实践解读 DeepSeek Harness：教学型 HTML 讲义">
+  <title>从官方资料和实践解读 DeepSeek Harness · HTML 讲义</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f3efe4;
+      --paper-deep: #e7e0d0;
+      --ink: #12243a;
+      --muted: #667080;
+      --navy: #071a2d;
+      --blue: #176bff;
+      --cyan: #19c7c8;
+      --orange: #ff6b35;
+      --yellow: #f5cb5c;
+      --green: #37b878;
+      --red: #e04a45;
+      --line: rgba(18, 36, 58, .16);
+      --shadow: 0 22px 60px rgba(7, 26, 45, .14);
+      --display: "Avenir Next", "Futura", "PingFang SC", sans-serif;
+      --body: "Songti SC", "Noto Serif CJK SC", "STSong", serif;
+      --sans: "Avenir Next", "PingFang SC", "Microsoft YaHei", sans-serif;
+      --mono: "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 36px; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(rgba(18, 36, 58, .035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(18, 36, 58, .035) 1px, transparent 1px),
+        var(--paper);
+      background-size: 28px 28px;
+      font-family: var(--body);
+      line-height: 1.72;
+    }
+
+    a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+    button { font: inherit; }
+    code { font-family: var(--mono); }
+    img { max-width: 100%; }
+    ::selection { color: white; background: var(--blue); }
+
+    .progress {
+      position: fixed;
+      inset: 0 auto auto 0;
+      z-index: 100;
+      width: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--orange), var(--yellow), var(--cyan));
+      box-shadow: 0 0 16px rgba(25, 199, 200, .6);
+    }
+
+    .sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      z-index: 30;
+      width: 286px;
+      overflow-y: auto;
+      padding: 28px 20px 30px;
+      color: #dce9f5;
+      background:
+        radial-gradient(circle at 10% 5%, rgba(25, 199, 200, .18), transparent 28%),
+        linear-gradient(165deg, #0b2842, var(--navy) 60%);
+      border-right: 1px solid rgba(255, 255, 255, .1);
+    }
+
+    .brand {
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 11px;
+      align-items: center;
+      margin-bottom: 34px;
+      font-family: var(--sans);
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      color: white;
+      font: 800 13px var(--mono);
+      border: 1px solid rgba(255, 255, 255, .25);
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      clip-path: polygon(12% 0, 100% 0, 100% 76%, 76% 100%, 0 100%, 0 12%);
+    }
+
+    .brand strong { display: block; font-size: 14px; letter-spacing: .03em; }
+    .brand small { color: #8fa7bd; font: 10px var(--mono); letter-spacing: .12em; }
+    .toc-label { margin: 0 9px 12px; color: #6f8ba5; font: 700 10px var(--mono); letter-spacing: .16em; }
+    .toc { display: grid; gap: 6px; }
+    .toc-no { color: var(--cyan); font: 700 10px var(--mono); letter-spacing: .08em; }
+    .sidebar-foot { margin: 30px 9px 0; color: #6f8ba5; font: 10px/1.6 var(--mono); }
+
+    .page { margin-left: 286px; }
+    .cover {
+      position: relative;
+      display: grid;
+      min-height: 96vh;
+      overflow: hidden;
+      color: white;
+      background:
+        linear-gradient(110deg, rgba(7, 26, 45, .98) 15%, rgba(7, 26, 45, .84) 64%, rgba(7, 26, 45, .96)),
+        linear-gradient(135deg, #0d3150, #071a2d);
+      isolation: isolate;
+    }
+
+    .cover::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background:
+        linear-gradient(90deg, transparent 49.8%, rgba(255, 255, 255, .08) 50%, transparent 50.2%),
+        linear-gradient(transparent 49.8%, rgba(255, 255, 255, .08) 50%, transparent 50.2%);
+      background-size: 86px 86px;
+      mask-image: linear-gradient(100deg, transparent 10%, #000 68%);
+    }
+
+    .orbit, .orbit::before, .orbit::after {
+      position: absolute;
+      border: 1px solid rgba(25, 199, 200, .35);
+      border-radius: 50%;
+    }
+
+    .orbit { right: -160px; bottom: -150px; width: 620px; height: 620px; }
+    .orbit::before { content: ""; inset: 80px; }
+    .orbit::after { content: ""; inset: 170px; background: rgba(23, 107, 255, .11); }
+    .cover-inner { align-self: center; width: min(1040px, calc(100% - 10vw)); margin: auto; padding: 72px 0 60px; }
+    .eyebrow { color: var(--cyan); font: 700 11px var(--mono); letter-spacing: .2em; text-transform: uppercase; }
+    .cover h1 {
+      max-width: 920px;
+      margin: 22px 0 26px;
+      font: 800 clamp(44px, 7vw, 92px)/.98 var(--display);
+      letter-spacing: -.055em;
+    }
+
+    .cover h1 em { display: block; color: transparent; -webkit-text-stroke: 1px rgba(255, 255, 255, .55); font-style: normal; }
+    .cover-lead { max-width: 690px; margin: 0; color: #afc2d4; font: 19px/1.7 var(--body); }
+    .cover-meta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 40px; }
+    .cover-meta span { padding: 8px 12px; color: #c9d8e7; border: 1px solid rgba(255, 255, 255, .16); border-radius: 999px; font: 11px var(--mono); }
+    .course-stats { align-self: end; display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid rgba(255, 255, 255, .12); }
+    .stat { padding: 22px 28px; border-right: 1px solid rgba(255, 255, 255, .12); }
+    .stat strong { display: block; font: 700 28px var(--display); }
+    .stat small { color: #829db4; font: 10px var(--mono); letter-spacing: .1em; text-transform: uppercase; }
+
+    .chapter { max-width: 1180px; margin: 0 auto; padding: 110px clamp(28px, 6vw, 84px); }
+    .chapter + .chapter { border-top: 1px solid var(--line); }
+    .chapter-heading { position: relative; margin-bottom: 62px; }
+    .chapter-index {
+      position: absolute;
+      top: -56px;
+      right: 0;
+      color: rgba(18, 36, 58, .06);
+      font: 800 clamp(100px, 17vw, 210px)/1 var(--display);
+      letter-spacing: -.08em;
+      pointer-events: none;
+    }
+
+    .chapter-kicker { color: var(--orange); font: 700 11px var(--mono); letter-spacing: .18em; text-transform: uppercase; }
+    .chapter h1 { position: relative; max-width: 880px; margin: 12px 0 18px; font: 800 clamp(38px, 5vw, 66px)/1.12 var(--display); letter-spacing: -.045em; }
+    .chapter-goal { display: flex; align-items: center; gap: 12px; max-width: 720px; color: var(--muted); font-family: var(--sans); }
+    .chapter-goal::before { content: "目标"; flex: none; padding: 4px 8px; color: white; background: var(--ink); font: 700 9px var(--mono); letter-spacing: .1em; }
+
+    .lesson { margin: 72px 0; scroll-margin-top: 34px; }
+    .lesson > h2 { margin: 0 0 28px; font: 800 clamp(28px, 3vw, 40px)/1.18 var(--display); letter-spacing: -.035em; }
+    .lesson > h3 { margin: 50px 0 20px; font: 750 clamp(20px, 2vw, 27px)/1.3 var(--display); letter-spacing: -.025em; }
+    .lesson > h4 { margin: 36px 0 16px; font: 750 18px/1.3 var(--display); }
+    .lesson-no { display: block; margin-bottom: 7px; color: var(--blue); font: 700 10px var(--mono); letter-spacing: .14em; }
+    .lead-line { max-width: 800px; margin: -10px 0 28px; color: #3d4a5b; font: 600 clamp(18px, 2vw, 24px)/1.55 var(--body); }
+
+    .teach-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 24px 0; }
+    .teach-card {
+      position: relative;
+      min-height: 170px;
+      padding: 22px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, .58);
+      border: 1px solid var(--line);
+      border-radius: 4px 22px 4px 4px;
+      box-shadow: 0 10px 30px rgba(7, 26, 45, .04);
+    }
+
+    .teach-card::after { content: attr(data-no); position: absolute; right: 12px; bottom: -20px; color: rgba(18, 36, 58, .05); font: 800 78px var(--display); }
+    .teach-card h3, .teach-card h4 { position: relative; z-index: 1; margin: 9px 0; font: 750 20px/1.25 var(--display); }
+    .teach-card p { position: relative; z-index: 1; margin: 0; color: var(--muted); font: 14px/1.65 var(--sans); }
+    .tag { display: inline-flex; align-items: center; gap: 6px; color: var(--blue); font: 700 9px var(--mono); letter-spacing: .1em; text-transform: uppercase; }
+    .tag::before { content: ""; width: 8px; height: 8px; background: currentColor; transform: rotate(45deg); }
+
+    .quote {
+      margin: 28px 0;
+      padding: 24px 28px;
+      color: #e6f1fb;
+      background: var(--navy);
+      border-left: 6px solid var(--cyan);
+      box-shadow: var(--shadow);
+      font: 600 clamp(18px, 2vw, 24px)/1.55 var(--body);
+    }
+
+    .quote cite { display: block; margin-top: 13px; color: #7895ae; font: 10px var(--mono); letter-spacing: .08em; font-style: normal; }
+    .source-list { display: grid; gap: 10px; }
+    .source-row {
+      display: grid;
+      grid-template-columns: minmax(170px, .9fr) 1.5fr auto;
+      gap: 16px;
+      align-items: center;
+      padding: 15px 17px;
+      background: rgba(255, 255, 255, .52);
+      border-bottom: 1px solid var(--line);
+      font-family: var(--sans);
+    }
+
+    .source-row strong { font-size: 14px; }
+    .source-row span { color: var(--muted); font-size: 12px; }
+    .source-row a { color: var(--blue); font: 700 10px var(--mono); text-decoration: none; }
+
+    .figure {
+      position: relative;
+      margin: 28px 0 42px;
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid rgba(18, 36, 58, .12);
+      box-shadow: var(--shadow);
+    }
+
+    .figure img { display: block; width: 100%; max-height: 720px; object-fit: contain; background: #f8f9fb; cursor: zoom-in; }
+    .figure figcaption { display: flex; justify-content: space-between; gap: 18px; align-items: center; padding: 12px 16px; color: var(--muted); border-top: 1px solid var(--line); font: 11px/1.5 var(--sans); }
+    .source-badge { flex: none; color: var(--green); font: 700 9px var(--mono); letter-spacing: .1em; }
+    .source-badge.original { color: var(--blue); }
+    .source-badge.diagram { color: var(--orange); }
+    .figure-pair, .figure-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 28px 0 42px; }
+    .figure-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .figure-pair .figure, .figure-grid .figure { margin: 0; }
+    .figure-grid .figure img { aspect-ratio: 4 / 3; }
+    .image-fallback { display: none; min-height: 220px; padding: 30px; place-items: center; text-align: center; color: var(--muted); background: repeating-linear-gradient(135deg, #f8f6f0, #f8f6f0 12px, #efebe0 12px, #efebe0 24px); font: 13px/1.7 var(--sans); }
+    .figure.failed img { display: none; }
+    .figure.failed .image-fallback { display: grid; }
+
+    .diagram {
+      margin: 30px 0 42px;
+      padding: 18px;
+      overflow-x: auto;
+      color: white;
+      background: var(--navy);
+      border-radius: 3px 26px 3px 3px;
+      box-shadow: var(--shadow);
+    }
+
+    .diagram svg { display: block; width: 100%; min-width: 720px; height: auto; }
+    .diagram-label { display: flex; justify-content: space-between; gap: 16px; padding: 2px 5px 14px; color: #8da7bf; font: 10px var(--mono); letter-spacing: .08em; }
+
+    .compare { width: 100%; margin: 25px 0 38px; border-collapse: collapse; background: rgba(255, 255, 255, .55); font-family: var(--sans); font-size: 13px; }
+    .compare th, .compare td { padding: 13px 15px; text-align: left; border: 1px solid var(--line); vertical-align: top; }
+    .compare th { color: white; background: var(--navy); font: 700 11px var(--mono); letter-spacing: .04em; }
+    .compare td:first-child { font-weight: 700; }
+    .table-wrap { width: 100%; overflow-x: auto; }
+
+    .steps { display: grid; gap: 12px; counter-reset: steps; margin: 26px 0 38px; }
+    .step { counter-increment: steps; display: grid; grid-template-columns: 52px 1fr; gap: 15px; padding: 17px; background: rgba(255, 255, 255, .55); border: 1px solid var(--line); }
+    .step::before { content: counter(steps, decimal-leading-zero); display: grid; place-items: center; width: 45px; height: 45px; color: white; background: var(--blue); font: 800 12px var(--mono); }
+    .step strong { display: block; margin-bottom: 3px; font: 750 16px var(--display); }
+    .step span { color: var(--muted); font: 13px/1.55 var(--sans); }
+
+    .code-card { position: relative; margin: 24px 0 36px; overflow: hidden; color: #dfe9f3; background: #071421; border: 1px solid #1c3853; box-shadow: 0 16px 44px rgba(7, 20, 33, .18); }
+    .code-head { display: flex; justify-content: space-between; align-items: center; padding: 9px 13px; color: #718ba4; border-bottom: 1px solid #1c3853; font: 10px var(--mono); letter-spacing: .08em; }
+    .copy-code { padding: 5px 8px; color: #9cb2c6; background: transparent; border: 1px solid #29455d; cursor: pointer; font: 10px var(--mono); }
+    pre { margin: 0; padding: 20px; overflow: auto; white-space: pre; tab-size: 2; font: 12px/1.75 var(--mono); }
+    details { margin: 20px 0; border: 1px solid var(--line); background: rgba(255, 255, 255, .48); }
+    summary { padding: 14px 17px; cursor: pointer; font: 700 13px var(--sans); }
+    details > div { padding: 0 17px 17px; color: var(--muted); font: 13px/1.7 var(--sans); }
+
+    .toc .toc-group {
+      margin: 0;
+      overflow: hidden;
+      color: #dce9f5;
+      background: transparent;
+      border: 0;
+      border-radius: 10px;
+    }
+
+    .toc .toc-group[open] { background: rgba(255, 255, 255, .035); }
+    .toc .toc-group summary {
+      display: grid;
+      grid-template-columns: 26px 1fr 12px;
+      gap: 8px;
+      align-items: start;
+      padding: 10px 9px;
+      color: #c5d5e3;
+      list-style: none;
+      font: 700 12px/1.45 var(--sans);
+    }
+
+    .toc .toc-group summary::-webkit-details-marker { display: none; }
+    .toc .toc-group summary::after {
+      content: "+";
+      color: #6f8ba5;
+      font: 14px/1 var(--mono);
+      transform: translateY(2px);
+    }
+
+    .toc .toc-group[open] summary::after { content: "−"; color: var(--cyan); }
+    .toc .toc-group summary:hover { color: white; background: rgba(255, 255, 255, .055); }
+    .toc .toc-sub { display: grid; gap: 2px; padding: 2px 8px 9px 43px; color: inherit; }
+    .toc .toc-sub a {
+      position: relative;
+      display: block;
+      padding: 6px 8px;
+      color: #819bb1;
+      border-radius: 7px;
+      font: 11px/1.4 var(--sans);
+      text-decoration: none;
+      transition: .18s ease;
+    }
+
+    .toc .toc-sub a::before {
+      content: "";
+      position: absolute;
+      top: 13px;
+      left: -9px;
+      width: 4px;
+      height: 4px;
+      background: #46647d;
+      border-radius: 50%;
+    }
+
+    .toc .toc-sub a:hover { color: white; background: rgba(255, 255, 255, .06); }
+    .toc .toc-sub a.active { color: white; background: rgba(23, 107, 255, .22); box-shadow: inset 2px 0 var(--cyan); }
+    .toc .toc-sub a.active::before { background: var(--cyan); box-shadow: 0 0 8px rgba(25, 199, 200, .75); }
+
+    .mode-ribbon { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; margin: 28px 0; background: var(--line); border: 1px solid var(--line); }
+    .mode { min-height: 180px; padding: 20px; background: var(--paper); }
+    .mode code { display: block; margin-bottom: 15px; color: var(--blue); font-size: 10px; }
+    .mode strong { display: block; margin-bottom: 10px; font: 750 21px var(--display); }
+    .mode span { color: var(--muted); font: 12px/1.6 var(--sans); }
+    .mode:nth-child(2) { background: #e4eefc; }
+    .mode:nth-child(3) { background: #e6e2d8; }
+    .mode:nth-child(4) { color: white; background: var(--navy); }
+    .mode:nth-child(4) span { color: #96aec3; }
+    .mode:nth-child(4) code { color: var(--cyan); }
+
+    .bars { display: grid; gap: 11px; margin: 28px 0; }
+    .bar { display: grid; grid-template-columns: minmax(190px, 1fr) 4fr 60px; gap: 12px; align-items: center; font: 12px var(--sans); }
+    .bar-track { height: 11px; overflow: hidden; background: rgba(18, 36, 58, .09); }
+    .bar-fill { width: var(--w); height: 100%; background: linear-gradient(90deg, var(--blue), var(--cyan)); transform-origin: left; }
+    .bar b { text-align: right; font: 700 11px var(--mono); }
+
+    .note { margin: 26px 0; padding: 18px 20px; color: #593b06; background: #fff2c4; border-left: 5px solid var(--yellow); font: 13px/1.65 var(--sans); }
+    .note strong { color: #332202; }
+    .section-end { display: grid; grid-template-columns: auto 1fr; gap: 13px; align-items: center; margin-top: 46px; color: var(--muted); font: 12px var(--sans); }
+    .section-end::before { content: "TAKEAWAY"; padding: 7px 9px; color: white; background: var(--orange); font: 700 9px var(--mono); letter-spacing: .1em; }
+
+    .page-footer { padding: 60px clamp(28px, 6vw, 84px); color: #8fa4b8; background: var(--navy); font: 11px/1.8 var(--mono); }
+    .page-footer strong { color: white; }
+    .mobile-menu { display: none; }
+    .lightbox { position: fixed; inset: 0; z-index: 120; display: none; place-items: center; padding: 28px; background: rgba(2, 10, 18, .92); }
+    .lightbox.open { display: grid; }
+    .lightbox img { max-width: 96vw; max-height: 90vh; object-fit: contain; box-shadow: 0 24px 80px #000; }
+    .lightbox button { position: absolute; top: 18px; right: 22px; width: 44px; height: 44px; color: white; background: rgba(255, 255, 255, .1); border: 1px solid rgba(255, 255, 255, .25); border-radius: 50%; cursor: pointer; }
+
+    @keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    .cover-inner > * { animation: rise .7s both; }
+    .cover-inner > :nth-child(2) { animation-delay: .08s; }
+    .cover-inner > :nth-child(3) { animation-delay: .16s; }
+    .cover-inner > :nth-child(4) { animation-delay: .24s; }
+
+    @media (max-width: 1080px) {
+      .sidebar { transform: translateX(-100%); transition: transform .25s ease; }
+      .sidebar.open { transform: translateX(0); }
+      .page { margin-left: 0; }
+      .mobile-menu { position: fixed; top: 14px; left: 14px; z-index: 60; display: block; padding: 10px 12px; color: white; background: var(--navy); border: 1px solid rgba(255,255,255,.2); font: 700 10px var(--mono); cursor: pointer; }
+      .figure-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 720px) {
+      .cover { min-height: auto; }
+      .cover-inner { align-self: start; width: calc(100% - 42px); padding: 92px 0 62px; }
+      .cover h1 { font-size: clamp(42px, 15vw, 68px); }
+      .cover-lead { font-size: 16px; }
+      .course-stats { grid-template-columns: repeat(2, 1fr); }
+      .stat { padding: 17px 20px; border-bottom: 1px solid rgba(255,255,255,.1); }
+      .chapter { padding: 86px 20px; }
+      .chapter-index { top: -35px; font-size: 110px; }
+      .teach-grid, .figure-pair, .figure-grid, .mode-ribbon { grid-template-columns: 1fr; }
+      .source-row { grid-template-columns: 1fr; gap: 4px; }
+      .figure img { max-height: 520px; }
+      .bar { grid-template-columns: 1fr 50px; }
+      .bar-track { grid-column: 1 / -1; grid-row: 2; }
+    }
+
+    @media print {
+      .sidebar, .mobile-menu, .progress, .copy-code, .lightbox { display: none !important; }
+      .page { margin: 0; }
+      .cover { min-height: 100vh; break-after: page; print-color-adjust: exact; }
+      .chapter { max-width: none; padding: 48px 34px; }
+      .lesson { break-inside: avoid-page; }
+      .figure, .diagram, .code-card { box-shadow: none; break-inside: avoid; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress" id="progress"></div>
+  <button class="mobile-menu" id="menu" aria-label="打开课程目录">目录</button>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark">DSH</div>
+      <div><strong>DeepSeek Harness</strong><small>TEACHING NOTES / 01</small></div>
+    </div>
+    <div class="toc-label">COURSE MAP</div>
+    <nav class="toc" aria-label="课程目录">
+      <details class="toc-group" open>
+        <summary><span class="toc-no">01</span><span>一、 官方如何介绍 DeepSeek Harness</span></summary>
+        <div class="toc-sub">
+          <a href="#chapter-1">章节首页</a>
+          <a href="#section-1-1">1.1 官方原始资料</a>
+          <a href="#section-1-2">1.2 三大核心特性</a>
+        </div>
+      </details>
+      <details class="toc-group" open>
+        <summary><span class="toc-no">02</span><span>二、上手体验</span></summary>
+        <div class="toc-sub">
+          <a href="#chapter-2">章节首页</a>
+          <a href="#section-2-1">2.1 标准模式</a>
+          <a href="#section-2-2">2.2 PTC 模式</a>
+          <a href="#section-2-2-3">2.2.3 run_code 编排工具</a>
+          <a href="#section-2-3">2.3 创造模式</a>
+          <a href="#section-2-4">2.4 极简模式</a>
+        </div>
+      </details>
+      <details class="toc-group" open>
+        <summary><span class="toc-no">03</span><span>三、 从源码看官方三大特性</span></summary>
+        <div class="toc-sub">
+          <a href="#chapter-3">章节首页</a>
+          <a href="#section-3-1">3.1 一切皆插件</a>
+          <a href="#section-3-1-3">3.1.3 Tool 插件实验</a>
+          <a href="#section-3-1-6">3.1.6 Cordis 原理（TODO）</a>
+          <a href="#section-3-2">3.2 轨迹</a>
+          <a href="#section-3-3">3.3 Agent Preset</a>
+        </div>
+      </details>
+      <details class="toc-group" open>
+        <summary><span class="toc-no">04</span><span>四、社区生态现状</span></summary>
+        <div class="toc-sub">
+          <a href="#chapter-4">章节首页</a>
+          <a href="#section-4-1">4.1 社区插件市场</a>
+          <a href="#section-4-2">4.2 高 Star 插件排行</a>
+          <a href="#section-4-3">4.3 社区 Preset</a>
+        </div>
+      </details>
+    </nav>
+    <p class="sidebar-foot">SOURCE · 语雀文档 570714311<br>CONTENT UPDATED · 2026-08-24<br>图片保留原始语雀 / 官网地址</p>
+  </aside>
+
+  <main class="page">
+    <header class="cover" id="top">
+      <div class="orbit" aria-hidden="true"></div>
+      <div class="cover-inner">
+        <div class="eyebrow">DeepSeek Harness · Visual Teaching Notes</div>
+        <h1>从官方资料和实践解读 <em>DeepSeek Harness</em></h1>
+        <p class="cover-lead">先看官方怎么定义，再亲手体验四种模式；最后回到源码，理解 Plugin、Trajectory 与 Preset 如何组成一个 Agent Harness。</p>
+        <div class="cover-meta"><span>官方资料优先</span><span>真实实验路径</span><span>29 张原文图片</span><span>自制图均明确标注</span></div>
+      </div>
+      <div class="course-stats">
+        <div class="stat"><strong>04</strong><small>课程章节</small></div>
+        <div class="stat"><strong>03</strong><small>核心特性</small></div>
+        <div class="stat"><strong>04</strong><small>运行模式</small></div>
+        <div class="stat"><strong>29</strong><small>原文图片</small></div>
+      </div>
+    </header>
+
+    <article class="chapter" id="chapter-1">
+      <header class="chapter-heading">
+        <span class="chapter-index">01</span>
+        <div class="chapter-kicker">Official definition</div>
+        <h1>一、 官方如何介绍 DeepSeek Harness</h1>
+        <div class="chapter-goal">只用官网、官方仓库、官方文档与 Cordis 一手资料建立产品认识。</div>
+      </header>
+
+      <section class="lesson" id="section-1-1">
+        <span class="lesson-no">1.1 · SOURCE FIRST</span>
+        <h2>1.1 官方原始资料</h2>
+        <p class="lead-line">四类入口，分别回答“它是什么、怎么实现、怎么开发、为什么这样设计”。</p>
+        <div class="source-list">
+          <div class="source-row"><strong>DeepSeek Harness 产品页</strong><span>定位、三大特性、四种运行模式、官方演示</span><a href="https://www.deepseek.com/harness/" target="_blank" rel="noreferrer">官网 ↗</a></div>
+          <div class="source-row"><strong>DeepSeek Harness 源码</strong><span>实际实现、启动方法、配置与插件边界</span><a href="https://github.com/deepseek-ai/deepseek-harness" target="_blank" rel="noreferrer">GitHub ↗</a></div>
+          <div class="source-row"><strong>DeepSeek Harness 文档</strong><span>用户指南、Develop 教程、架构与 API</span><a href="https://deepseek-harness.github.io/deepseek-harness/" target="_blank" rel="noreferrer">Docs ↗</a></div>
+          <div class="source-row"><strong>Cordis 与论文</strong><span>Context、Fiber、Effect、Service、Event 的理论与实现</span><a href="https://github.com/cordiverse/paper" target="_blank" rel="noreferrer">Paper ↗</a></div>
+        </div>
+      </section>
+
+      <section class="lesson" id="section-1-2">
+        <span class="lesson-no">1.2 · THREE IDEAS</span>
+        <h2>1.2 DeepSeek Harness 的三大核心特性</h2>
+        <div class="teach-grid">
+          <div class="teach-card" data-no="1"><span class="tag">Composition</span><h3>Everything is a plugin</h3><p>模型、工具、会话、沙箱、存储、循环、调度与 UI，全部由插件贡献。</p></div>
+          <div class="teach-card" data-no="2"><span class="tag">Evidence</span><h3>Every run is traceable</h3><p>模型看到的输入与工作过程写入会话事件流，可以恢复、分叉与回放。</p></div>
+          <div class="teach-card" data-no="3"><span class="tag">Preset</span><h3>Multiple runtime modes</h3><p>四种模式不是四个模型，而是四套不同的 Harness 能力组合。</p></div>
+        </div>
+        <figure class="figure">
+          <img loading="lazy" src="https://intranetproxy.alipay.com/skylark/lark/0/2026/png/147956511/1787295732847-7e1f0367-ae0c-4f35-ae3f-63bf09d7d5fb.png" alt="DeepSeek Harness 一切皆插件界面截图">
+          <div class="image-fallback">图片需要蚂蚁内网或语雀登录状态。<a href="https://intranetproxy.alipay.com/skylark/lark/0/2026/png/147956511/1787295732847-7e1f0367-ae0c-4f35-ae3f-63bf09d7d5fb.png" target="_blank">打开原图 ↗</a></div>
+          <figcaption><span>插件列表：能力由 Cordis Plugin 组装</span><span class="source-badge original">原文截图</span></figcaption>
+        </figure>
+        <figure class="figure">
+          <img loading="lazy" src="https://deepseek.com/harness/images/harness/trajectory-real-view.zh.png" alt="DeepSeek Harness 官方 Trajectory 视图">
+          <div class="image-fallback">官网图片暂时无法加载。<a href="https://deepseek.com/harness/images/harness/trajectory-real-view.zh.png" target="_blank">打开原图 ↗</a></div>
+          <figcaption><span>Trajectory：按来源查看模型输入、输出与工具活动</span><span class="source-badge">官网截图</span></figcaption>
+        </figure>
+        <figure class="figure">
+          <img loading="lazy" src="https://intranetproxy.alipay.com/skylark/lark/0/2026/png/147956511/1787295845585-80a866bf-29f0-4b64-99f4-2e492990fba8.png" alt="DeepSeek Harness 四种运行模式">
+          <div class="image-fallback">图片需要蚂蚁内网或语雀登录状态。</div>
+          <figcaption><span>Standard、PTC、Minimal、Creator：不同的能力组合</span><span class="source-badge original">原文截图</span></figcaption>
+        </figure>
+        <div class="mode-ribbon">
+          <div class="mode"><code>STANDARD</code><strong>标准模式</strong><span>完整 Coding Agent：文件、Shell、搜索、Skills、计划、子 Agent。</span></div>
+          <div class="mode"><code>CODE / PTC</code><strong>PTC 模式</strong><span>通过一段 TypeScript 程序组合多步工具调用。</span></div>
+          <div class="mode"><code>MINIMAL</code><strong>极简模式</strong><span>只保留持久 Bash 与 str_replace_editor。</span></div>
+          <div class="mode"><code>CORDIS</code><strong>创造模式</strong><span>在 Standard 上增加运行时检查、插件实验与 Preset 创作。</span></div>
+        </div>
+        <div class="section-end">先记住三句话：能力可组装、过程可追踪、运行模式可替换。</div>
+      </section>
+    </article>
+
+    <article class="chapter" id="chapter-2">
+      <header class="chapter-heading">
+        <span class="chapter-index">02</span>
+        <div class="chapter-kicker">Hands-on experience</div>
+        <h1>二、上手体验</h1>
+        <div class="chapter-goal">同一个 Agent Harness，通过不同工具呈现和能力组合，产生不同的工作方式。</div>
+      </header>
+
+      <section class="lesson" id="section-2-1">
+        <span class="lesson-no">2.1 · FULL TOOLSET</span>
+        <h2>2.1 标准模式</h2>
+        <p class="lead-line">日常 Coding Agent：能力齐全，体验接近 Codex 与 Claude Code。</p>
+        <div class="figure-pair">
+          <figure class="figure"><img loading="lazy" src="https://intranetproxy.alipay.com/skylark/lark/0/2026/png/147956511/1787233191578-4d5e5669-e6f2-46d5-bfe4-13aeeeec2b10.png" alt="标准模式选择界面"><div class="image-fallback">原图需要登录后访问。</div><figcaption><span>标准模式入口</span><span class="source-badge original">原文截图</span></figcaption></figure>
+          <figure class="figure"><img loading="lazy" src="https://intranetproxy.alipay.com/skylark/lark/0/2026/png/147956511/1787232795519-ff2579d9-0d88-4e26-b8a1-a3867339451a.png" alt="标准模式配置文件"><div class="image-fallback">原图需要登录后访问。</div><figcaption><span>模式背后是一份插件配置</span><span class="source-badge original">原文截图</span></figcaption></figure>
+        </div>
+      </section>
+
+      <section class="lesson" id="section-2-2">
+        <span class="lesson-no">2.2 · PROGRAMMATIC TOOL CALLING</span>
+        <h2>2.2 PTC模式</h2>
+        <h3>2.2.1 什么是 PTC</h3>
+        <p class="lead-line">模型主要看到一个 <code>run_code</code>，再由它编排 Harness 内部工具。</p>
+        <figure class="figure"><img loading="lazy" src="https://intranetproxy.alipay.com/skylark/lark/0/2026/png/147956511/1787232799518-5ab7722c-6cf9-4ff9-b0fb-ce646ba835a7.png" alt="PTC run_code 工具界面"><div class="image-fallback">原图需要登录后访问。</div><figcaption><span>PTC：模型通过 run_code 进入工具 SDK</span><span class="source-badge original">原文截图</span></figcaption></figure>
+        <div class="diagram">
+          <div class="diagram-label"><span>PTC CALL PATH</span><span>讲义示意图 · 非官方</span></div>
+          <svg viewBox="0 0 980 330" role="img" aria-label="PTC 工具调用路径示意图">
+            <defs><linearGradient id="ptcG" x1="0" x2="1"><stop stop-color="#176bff"/><stop offset="1" stop-color="#19c7c8"/></linearGradient><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#6f8ba5"/></marker></defs>
+            <rect x="28" y="112" width="160" height="92" rx="18" fill="#102f4a" stroke="#19c7c8"/><text x="108" y="147" fill="#fff" text-anchor="middle" font-family="sans-serif" font-size="20" font-weight="700">模型</text><text x="108" y="176" fill="#8da7bf" text-anchor="middle" font-family="monospace" font-size="12">只看见 1 个工具</text>
+            <path d="M190 158 H285" stroke="#6f8ba5" stroke-width="2" marker-end="url(#arrow)"/>
+            <rect x="295" y="92" width="190" height="132" rx="18" fill="url(#ptcG)"/><text x="390" y="143" fill="#fff" text-anchor="middle" font-family="monospace" font-size="22" font-weight="700">run_code</text><text x="390" y="175" fill="#e7f7ff" text-anchor="middle" font-family="sans-serif" font-size="13">异步 TypeScript</text><text x="390" y="197" fill="#e7f7ff" text-anchor="middle" font-family="sans-serif" font-size="13">处理全部中间结果</text>
+            <path d="M487 158 H578" stroke="#6f8ba5" stroke-width="2" marker-end="url(#arrow)"/>
+            <rect x="590" y="38" width="170" height="64" rx="13" fill="#102f4a" stroke="#42617b"/><text x="675" y="77" fill="#fff" text-anchor="middle" font-family="monospace" font-size="15">tools.read()</text>
+            <rect x="590" y="126" width="170" height="64" rx="13" fill="#102f4a" stroke="#42617b"/><text x="675" y="165" fill="#fff" text-anchor="middle" font-family="monospace" font-size="15">tools.bash()</text>
+            <rect x="590" y="214" width="170" height="64" rx="13" fill="#102f4a" stroke="#42617b"/><text x="675" y="253" fill="#fff" text-anchor="middle" font-family="monospace" font-size="15">tools.web()</text>
+            <path d="M762 70 H842 M762 158 H842 M762 246 H842" stroke="#6f8ba5" stroke-width="2" marker-end="url(#arrow)"/>
+            <rect x="850" y="105" width="104" height="106" rx="18" fill="#153929" stroke="#37b878"/><text x="902" y="147" fill="#fff" text-anchor="middle" font-family="sans-serif" font-size="17" font-weight="700">摘要</text><text x="902" y="174" fill="#8de1b5" text-anchor="middle" font-family="monospace" font-size="12">logs</text><text x="902" y="193" fill="#8de1b5" text-anchor="middle" font-family="monospace" font-size="12">result</text>
+          </svg>
+        </div>
+
+        <h3>2.2.2、<code>run_code</code> 工具 Schema</h3>
+        <div class="code-card"><div class="code-head"><span>TYPE DEFINITIONS</span><button class="copy-code">COPY</button></div><pre><code>type RunCodeArgs = {
+  code: string        // 异步 TypeScript 函数体
+  description: string // 显示在 UI 中的用途说明
+}
+
+type RunCodeOutput = {
+  logs: string[]      // console.log 输出
+  result?: JsonValue // return 的 JSON 值
+}</code></pre></div>
+
+        <h3 id="section-2-2-3">2.2.3、run_code 能编排的工具</h3>
+        <div class="quote">Code Mode 中，每个当前 Agent 可见、已经注册的 Harness 工具，都会自动成为 <code>await tools.&lt;name&gt;(args)</code>。<cite><a href="https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/cookbook/adding-a-tool.md#code-mode-reaches-your-tool-for-free" target="_blank" rel="noreferrer">官方源码 · Tool authoring reference ↗</a></cite></div>
+        <p class="lead-line">可编排范围来自 Harness 工具注册表，不是操作系统里的任意命令，也不是一份写死的工具名单。</p>
+        <div class="teach-grid">
+          <div class="teach-card" data-no="1"><span class="tag">Registry</span><h4>先注册</h4><p>Cordis Plugin 通过 <code>ctx.tools.register(...)</code> 把工具交给 Harness。</p></div>
+          <div class="teach-card" data-no="2"><span class="tag">Visible</span><h4>再筛选</h4><p>Preset、作用域和权限决定这个 Agent 最终能看见哪些工具。</p></div>
+          <div class="teach-card" data-no="3"><span class="tag">SDK</span><h4>自动生成</h4><p>Code Mode 根据可见工具的 Schema 生成本轮 <code>tools</code> SDK。</p></div>
+        </div>
+        <div class="note"><strong>常见示例：</strong><code>read</code>、<code>write</code>、<code>edit</code>、<code>bash</code>、<code>web_search</code>。实际名单以当前会话生成的 SDK 为准。</div>
+        <h4>想增加一个能被 run_code 编排的工具</h4>
+        <div class="quote">开发一个 Tool Plugin，并把工具注册到 Harness。插件加载且工具对当前 Agent 可见后，Code Mode 会自动把它加入 <code>run_code</code> 的生成 SDK，无需修改 <code>run_code</code>。</div>
+        <div class="source-row"><strong>后续实验</strong><span>3.1.3 动手开发 1 个 Tool 插件</span><a href="#section-3-1-3">跳转学习 →</a></div>
+
+        <h3>2.2.4、PTC 与直接写脚本让模型调用的区别</h3>
+        <div class="table-wrap"><table class="compare"><thead><tr><th>对比项</th><th>PTC</th><th>直接写脚本</th></tr></thead><tbody><tr><td>定位</td><td>开放式任务的临时工具编排</td><td>固定能力的可复用封装</td></tr><tr><td>执行</td><td><code>run_code</code> 调用 <code>tools.xxx()</code></td><td>Bash、Node、Python</td></tr><tr><td>权限</td><td>子调用进入 Harness 工具流程</td><td>主要依赖进程与文件沙箱</td></tr><tr><td>中间结果</td><td>程序内处理，只返回摘要</td><td>脚本自行控制输出</td></tr></tbody></table></div>
+
+        <h3>2.2.5 一些实际使用</h3>
+        <figure class="figure"><img loading="lazy" src="https://intranetproxy.alipay.com/skylark/lark/0/2026/png/147956511/1787233910822-26eecd32-9743-406a-a6fd-c6db26333a71.png" alt="PTC 模式游戏开发实验分享"><div class="image-fallback">原图需要登录后访问。</div><figcaption><span>一次游戏开发实验中的模式对比</span><span class="source-badge original">原文截图</span></figcaption></figure>
+        <div class="note"><strong>注意：</strong>单次实验的速度与 Token 结果不能外推到所有任务。</div>
+      </section>
+
+      <section class="lesson" id="section-2-3">
+        <span class="lesson-no">2.3 · CREATOR</span>
+        <h2>2.3 创造模式</h2>
+        <h3>2.3.1、什么是创造模式</h3>
+        <div class="quote">用于创建自定义 Agent preset：具备标准模式的全部能力，并提供运行时检查、插件实验和 preset 创作指导。<cite><a href="https://github.com/deepseek-ai/deepseek-harness/blob/master/apps/cli/config/agent-presets/cordis/preset.yml" target="_blank" rel="noreferrer">官方源码 · cordis/preset.yml ↗</a></cite></div>
+        <figure class="figure"><img loading="lazy" src="https://intranetproxy.alipay.com/skylark/lark/0/2026/png/147956511/1787232801596-8700ced5-a367-4f46-8af9-377d3efd9ebe.png" alt="创造模式官方定义"><div class="image-fallback">原图需要登录后访问。</div><figcaption><span>Creator：Standard 能力 + 运行时检查 + 插件实验</span><span class="source-badge original">原文截图</span></figcaption></figure>
+        <h4>创造什么？</h4>
+        <div class="teach-grid" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+          <div class="teach-card" data-no="1"><span class="tag">Plugin</span><h4>创造插件</h4><p>检查运行时，开发和调试 Cordis Plugin，为 Harness 增加工具、服务或 UI。</p></div>
+          <div class="teach-card" data-no="2"><span class="tag">Preset</span><h4>创建 Agent Preset（Agent 预设模式）</h4><p>组合 Persona、工具、Skills 与工作流，形成可以再次选择的 Agent 模式。</p></div>
+        </div>
+        <div class="note"><strong>官方描述的重点：</strong>创造模式保留 Standard 的完整开发能力，再增加运行时检查、插件实验和 Preset 创作指导。</div>
+
+        <h3>2.3.2、多出来的 2 个 Skill</h3>
+        <div class="figure-pair">
+          <figure class="figure"><img loading="lazy" src="https://intranetproxy.alipay.com/skylark/lark/0/2026/png/147956511/1787232803145-e0a9620a-6f69-494d-ae25-47e704bf317b.png" alt="cordis-plugin-development Skill"><div class="image-fallback">原图需要登录后访问。</div><figcaption><span>cordis-plugin-development</span><span class="source-badge original">原文截图</span></figcaption></figure>
+          <figure class="figure"><img loading="lazy" src="https://intranetproxy.alipay.com/skylark/lark/0/2026/png/147956511/1787232805011-a07fb96d-54d1-484f-bf8b-b929a7b0d46b.png" alt="editing-cordis-compositions Skill"><div class="image-fallback">原图需要登录后访问。</div><figcaption><span>editing-cordis-compositions</span><span class="source-badge original">原文截图</span></figcaption></figure>
+        </div>
+        <figure class="figure"><img loading="lazy" src="https://intranetproxy.alipay.com/skylark/lark/0/2026/png/147956511/1787232807075-4d2f4aea-b902-4f2c-9e7e-1060704fa775.png" alt="创造模式额外上下文"><div class="image-fallback">原图需要登录后访问。</div><figcaption><span>Skill 按需加载，不会始终塞进系统提示词</span><span class="source-badge original">原文截图</span></figcaption></figure>
+
+        <h3>2.3.3、能输出的产物</h3>
+        <div class="teach-grid" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+          <div class="teach-card" data-no="A"><span class="tag">Runtime</span><h4>动态 Cordis 插件</h4><p>临时增加工具、服务、事件、浏览器面板、按钮、主题与样式。</p></div>
+          <div class="teach-card" data-no="B"><span class="tag">Disk</span><h4>自定义 Agent preset</h4><p>持久保存 Persona、工具、Skills、子 Agent、工作流与上下文能力。</p></div>
+        </div>
+
+        <h3>2.3.4、适用场景和时效性</h3>
+        <div class="table-wrap"><table class="compare"><thead><tr><th>产物</th><th>时效性</th><th>适合场景</th></tr></thead><tbody><tr><td>动态 Cordis 插件</td><td>宿主进程重启后消失</td><td>临时实验、调试、当前 UI 增强</td></tr><tr><td>自定义 Agent preset</td><td>保存到磁盘，重启后存在</td><td>长期使用的 Agent 能力组合</td></tr></tbody></table></div>
+
+        <h3>2.3.6 实操开发1个UI插件</h3>
+        <figure class="figure"><img loading="lazy" src="https://intranetproxy.alipay.com/skylark/lark/0/2026/png/147956511/1787232808701-f75f6bea-0655-45f0-a1f4-f377c6c3aa79.png" alt="创造模式开发蓝色蚂蚁 UI 插件"><div class="image-fallback">原图需要登录后访问。</div><figcaption><span>生成期间，蓝色蚂蚁在输入框上方往返爬动</span><span class="source-badge original">原文截图</span></figcaption></figure>
+      </section>
+
+      <section class="lesson" id="section-2-4">
+        <span class="lesson-no">2.4 · TWO TOOLS</span>
+        <h2>2.4 极简模式</h2>
+        <p class="lead-line">只把两个工具交给模型：持久 Bash + <code>str_replace_editor</code>。</p>
+        <figure class="figure"><img loading="lazy" src="https://intranetproxy.alipay.com/skylark/lark/0/2026/png/147956511/1787233154670-3b7ef065-75cf-433c-9148-75f3bb38f6b6.png" alt="极简模式界面"><div class="image-fallback">原图需要登录后访问。</div><figcaption><span>Minimal：最小工具环境，用于观察模型本体</span><span class="source-badge original">原文截图</span></figcaption></figure>
+        <div class="section-end">四种模式的关键区别，不是“聪明程度”，而是 Agent 得到的插件与工具组合。</div>
+      </section>
+    </article>
+
+    <article class="chapter" id="chapter-3">
+      <header class="chapter-heading">
+        <span class="chapter-index">03</span>
+        <div class="chapter-kicker">Read the source</div>
+        <h1>三、 从源码看官方三大特性</h1>
+        <div class="chapter-goal">用源码、配置与真实实验解释“一切皆插件、轨迹、多模式”。</div>
+      </header>
+
+      <section class="lesson" id="section-3-1">
+        <span class="lesson-no">3.1 · EVERYTHING IS A PLUGIN</span>
+        <h2>3.1 一切皆插件</h2>
+        <figure class="figure"><img loading="lazy" src="https://intranetproxy.alipay.com/skylark/lark/0/2026/png/147956511/1787232810951-67f688cf-5009-4bc6-8498-0ee4eb847ddd.png" alt="官方插件体验界面"><div class="image-fallback">原图需要登录后访问。</div><figcaption><span>插件不是附加功能，而是 Harness 的基本组成单位</span><span class="source-badge original">原文截图</span></figcaption></figure>
+        <figure class="figure"><img loading="lazy" src="https://intranetproxy.alipay.com/skylark/lark/0/2026/png/147956511/1787232815001-d3adec9c-0d42-47eb-afef-5af0748dd5ff.png" alt="源码中的插件定义"><div class="image-fallback">原图需要登录后访问。</div><figcaption><span>源码视角：Plugin 接收 Context 并贡献能力</span><span class="source-badge original">原文截图</span></figcaption></figure>
+
+        <h4>这张图来自哪段官方说明？</h4>
+        <div class="teach-grid">
+          <div class="teach-card" data-no="1"><span class="tag">官方原文</span><h4>Cordis 内核</h4><p>“Cordis 内核只负责插件的加载、卸载和依赖关系，不承载 Agent 的具体能力。”</p></div>
+          <div class="teach-card" data-no="2"><span class="tag">官方原文</span><h4>插件提供能力</h4><p>“模型、工具、技能、会话、沙箱、存储、循环、调度、UI 等所有 Agent 能力均由插件提供，并通过 Cordis 服务与事件彼此协作。”</p></div>
+          <div class="teach-card" data-no="3"><span class="tag">官方原文</span><h4>配置层自由组合</h4><p>“开发者无需改动源码，即可在配置层选择、替换或扩展任一能力。”</p></div>
+        </div>
+        <div class="source-row"><strong>原始出处</strong><span>DeepSeek Harness 官网 · 一切皆插件</span><a href="https://www.deepseek.com/harness/" target="_blank" rel="noreferrer">查看官方原文 ↗</a></div>
+        <div class="quote">“到目前为止构建的每项能力都是插件，<code>cordis.yml</code> 则选择应用的插件树。”<cite><a href="https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/cordis-tutorial/06-composition-and-hmr.zh.md" target="_blank" rel="noreferrer">官方教程 · 组合与 HMR ↗</a></cite></div>
+        <div class="note"><strong>这里的“配置层”是什么？</strong> <code>cordis.yml</code> 是最直接的组合入口，但不是唯一文件：Profile / Bundle 与 <code>cordis.patch.yml</code> 负责宿主组合，Agent Preset 使用 <code>agent.cordis.yml</code>。它们最终决定要装载的插件树。</div>
+        <div class="source-row"><strong>配置机制出处</strong><span>Profile、Bundle 与 Patch 的叠加顺序</span><a href="https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/architecture.md#profiles-and-bundles" target="_blank" rel="noreferrer">官方架构文档 ↗</a></div>
+
+        <div class="diagram">
+          <div class="diagram-label"><span>CORDIS COMPOSITION</span><span>基于官网原文与官方配置文档绘制 · 非官方图解</span></div>
+          <svg viewBox="0 0 980 620" role="img" aria-label="Cordis 配置文件组合插件并装载到 Context 的示意图">
+            <defs><marker id="arrow2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#6f8ba5"/></marker></defs>
+
+            <rect x="30" y="20" width="920" height="112" rx="20" fill="#0c2a43" stroke="#19c7c8"/>
+            <text x="58" y="51" fill="#79adc0" font-family="monospace" font-size="11" letter-spacing="1.5">CONFIGURATION · 按运行场景选择与叠加</text>
+            <g font-family="monospace" font-size="13" text-anchor="middle">
+              <rect x="62" y="68" width="220" height="42" rx="10" fill="#17304a" stroke="#42617b"/><text x="172" y="94" fill="#fff">cordis.yml</text>
+              <rect x="306" y="68" width="368" height="42" rx="10" fill="#17304a" stroke="#42617b"/><text x="490" y="94" fill="#fff">Profile / Bundle / cordis.patch.yml</text>
+              <rect x="698" y="68" width="220" height="42" rx="10" fill="#17304a" stroke="#42617b"/><text x="808" y="94" fill="#fff">agent.cordis.yml</text>
+            </g>
+
+            <path d="M490 133 V164" stroke="#6f8ba5" stroke-width="2" marker-end="url(#arrow2)"/>
+            <rect x="255" y="173" width="470" height="86" rx="18" fill="#3b2b12" stroke="#f5cb5c"/>
+            <text x="490" y="208" fill="#fff" text-anchor="middle" font-family="sans-serif" font-size="21" font-weight="700">Loader 解析出的插件树</text>
+            <text x="490" y="235" fill="#e9d495" text-anchor="middle" font-family="monospace" font-size="12">有序条目：id · name · config　｜　选择 · 替换 · 插入</text>
+
+            <g stroke="#6f8ba5" stroke-width="2" marker-end="url(#arrow2)">
+              <path d="M390 260 L150 306"/><path d="M455 260 L382 306"/><path d="M525 260 L598 306"/><path d="M590 260 L830 306"/>
+            </g>
+            <g fill="#0c2a43" stroke="#42617b">
+              <rect x="48" y="315" width="205" height="82" rx="14"/><rect x="278" y="315" width="205" height="82" rx="14"/><rect x="508" y="315" width="205" height="82" rx="14"/><rect x="738" y="315" width="194" height="82" rx="14"/>
+            </g>
+            <g text-anchor="middle" font-family="sans-serif">
+              <text x="150" y="349" fill="#79adc0" font-family="monospace" font-size="10">PLUGIN</text><text x="150" y="377" fill="#fff" font-size="17" font-weight="700">模型 / 工具</text>
+              <text x="380" y="349" fill="#79adc0" font-family="monospace" font-size="10">PLUGIN</text><text x="380" y="377" fill="#fff" font-size="17" font-weight="700">Skills / Agent Loop</text>
+              <text x="610" y="349" fill="#79adc0" font-family="monospace" font-size="10">PLUGIN</text><text x="610" y="377" fill="#fff" font-size="17" font-weight="700">会话 / 存储 / 日志</text>
+              <text x="835" y="349" fill="#79adc0" font-family="monospace" font-size="10">PLUGIN</text><text x="835" y="377" fill="#fff" font-size="17" font-weight="700">沙箱 / 权限 / UI</text>
+            </g>
+
+            <g stroke="#6f8ba5" stroke-width="2" marker-end="url(#arrow2)">
+              <path d="M150 398 L315 465"/><path d="M380 398 L425 454"/><path d="M610 398 L555 454"/><path d="M835 398 L665 465"/>
+            </g>
+            <rect x="220" y="455" width="540" height="135" rx="26" fill="#113956" stroke="#19c7c8" stroke-width="2"/>
+            <text x="490" y="503" fill="#fff" text-anchor="middle" font-family="sans-serif" font-size="29" font-weight="700">Cordis Context</text>
+            <text x="490" y="536" fill="#91b1c8" text-anchor="middle" font-family="monospace" font-size="13">Service · Event · Effect · Fiber</text>
+            <text x="490" y="565" fill="#91b1c8" text-anchor="middle" font-family="sans-serif" font-size="13">装载与卸载 · 依赖等待 · 生命周期清理</text>
+          </svg>
+        </div>
+
+        <h3>3.1.1 官方插件体验</h3>
+        <div class="teach-grid">
+          <div class="teach-card" data-no="1"><span class="tag">Lab</span><h4>Hello 日志插件</h4><p>确认 Loader 导入模块并调用 <code>apply(ctx)</code>。</p></div>
+          <div class="teach-card" data-no="2"><span class="tag">Tool</span><h4>模型工具插件</h4><p>注册 <code>greet</code>，让 Agent 在调用链中使用它。</p></div>
+          <div class="teach-card" data-no="3"><span class="tag">HMR</span><h4>热更新插件</h4><p>配置变化后，旧贡献撤销，新实例重新装载。</p></div>
+        </div>
+
+        <h3>3.1.2 动手开发 1 个 Hello 日志打印插件</h3>
+        <div class="steps"><div class="step"><div><strong>写插件</strong><span>导出 <code>name</code> 与 <code>apply(ctx)</code>。</span></div></div><div class="step"><div><strong>写 patch</strong><span>使用绝对路径把本地 TypeScript 模块插入组合。</span></div></div><div class="step"><div><strong>启动 Web</strong><span><code>pnpm dsh web --patch ./cordis.yml</code></span></div></div><div class="step"><div><strong>看终端</strong><span>出现 <code>[hello-plugin] plugin loaded!</code>。</span></div></div></div>
+        <div class="code-card"><div class="code-head"><span>my-plugin.ts</span><button class="copy-code">COPY</button></div><pre><code>import type { Context } from '@deepseek-ai/cordis'
+
+export const name = 'hello-plugin'
+
+export function apply(ctx: Context) {
+  console.log('[hello-plugin] plugin loaded!')
+}</code></pre></div>
+        <figure class="figure"><img loading="lazy" src="https://intranetproxy.alipay.com/skylark/lark/0/2026/png/147956511/1787232817912-e06d78aa-5748-47fa-8459-c9ec18bf2aa8.png" alt="第一个 Harness 插件启动成功"><div class="image-fallback">原图需要登录后访问。</div><figcaption><span>Loader 调用 apply(ctx)，终端打印加载日志</span><span class="source-badge original">原文截图</span></figcaption></figure>
+
+        <h3 id="section-3-1-3">3.1.3 动手开发 1 个 Tool 插件</h3>
+        <p class="lead-line">工具插件把“可调用能力”注册进模型工具集合。</p>
+        <div class="code-card"><div class="code-head"><span>greet-tool.ts · core</span><button class="copy-code">COPY</button></div><pre><code>export const inject = ['tools']
+
+export function apply(ctx: Context) {
+  ctx.tools.register(defineTool({
+    name: 'greet',
+    description: 'Greet someone by name.',
+    parameters: { name: { type: 'string', required: true } },
+    async execute(args) { return `Hello, ${args.name}!` }
+  }))
+}</code></pre></div>
+        <figure class="figure"><img loading="lazy" src="https://intranetproxy.alipay.com/skylark/lark/0/2026/png/147956511/1787289581725-47902bc9-7f53-41b0-a522-06311345f060.png" alt="greet 工具调用结果"><div class="image-fallback">原图需要登录后访问。</div><figcaption><span>模型调用 greet，工具返回 Hello, Ada!</span><span class="source-badge original">原文截图</span></figcaption></figure>
+
+        <h3>3.1.4 做一个热更新插件，体验插件的自动卸载+自动重装</h3>
+        <div class="diagram">
+          <div class="diagram-label"><span>HMR LIFECYCLE</span><span>讲义示意图 · 非官方</span></div>
+          <svg viewBox="0 0 980 240" role="img" aria-label="Cordis 插件热更新生命周期">
+            <defs><marker id="arrow3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#6f8ba5"/></marker></defs>
+            <g font-family="sans-serif" text-anchor="middle"><rect x="30" y="68" width="170" height="95" rx="16" fill="#12324b" stroke="#42617b"/><text x="115" y="105" fill="#fff" font-size="18" font-weight="700">保存配置</text><text x="115" y="133" fill="#8da7bf" font-size="12">稳定 id 被检测</text><rect x="282" y="68" width="170" height="95" rx="16" fill="#3d1f26" stroke="#e04a45"/><text x="367" y="105" fill="#fff" font-size="18" font-weight="700">Dispose</text><text x="367" y="133" fill="#ec9da0" font-size="12">撤销旧 Effect</text><rect x="534" y="68" width="170" height="95" rx="16" fill="#3b2b12" stroke="#f5cb5c"/><text x="619" y="105" fill="#fff" font-size="18" font-weight="700">等待依赖</text><text x="619" y="133" fill="#e9d495" font-size="12">Consumer 暂停</text><rect x="786" y="68" width="170" height="95" rx="16" fill="#153929" stroke="#37b878"/><text x="871" y="105" fill="#fff" font-size="18" font-weight="700">Reload</text><text x="871" y="133" fill="#8de1b5" font-size="12">按新参数恢复</text></g><g stroke="#6f8ba5" stroke-width="2" marker-end="url(#arrow3)"><path d="M202 116 H272"/><path d="M454 116 H524"/><path d="M706 116 H776"/></g>
+          </svg>
+        </div>
+        <div class="note"><strong>关键区别：</strong><code>--patch</code> 是一次性启动覆盖层；长期运行的 Web 会监听用户 Profile 中的 <code>cordis.patch.yml</code>。</div>
+        <figure class="figure"><img loading="lazy" src="https://intranetproxy.alipay.com/skylark/lark/0/2026/png/147956511/1787297177194-b0dcb5c9-03e0-4bc6-9542-99040f1194a5.png" alt="Harness 用户设置配置截图"><div class="image-fallback">原图需要登录后访问。</div><figcaption><span>用户配置示例：模型与 Provider 设置</span><span class="source-badge original">原文截图</span></figcaption></figure>
+
+        <h3>3.1.5 打包并发布 1 个蚂蚁 UI 插件</h3>
+        <div class="steps"><div class="step"><div><strong>Build</strong><span>构建 Host 与 Client 产物。</span></div></div><div class="step"><div><strong>Pack</strong><span><code>pnpm pack</code> 生成可安装的 <code>.tgz</code>。</span></div></div><div class="step"><div><strong>Install</strong><span><code>dsh plugin add</code> 把包和 Bundle Patch 加入 Web Profile。</span></div></div><div class="step"><div><strong>Publish</strong><span>验收 tarball 后，再由包所有者发布 npm 版本。</span></div></div></div>
+        <div class="code-card"><div class="code-head"><span>cordis.patch.yml</span><button class="copy-code">COPY</button></div><pre><code>- insert:
+    - id: ui-running-ant
+      name: dsh-running-ant</code></pre></div>
+
+        <h3 id="section-3-1-6">3.1.6 从真实开发案例看插件的原理 ---- 引出 cordis 原理，论文</h3>
+        <div class="note"><strong>TODO：本节需要详细补充并重新组织。</strong> 基于官方源码、Cordis 文档与论文解释 Context、Fiber、Effect、Service、Event 的职责；把插件加载、工具注册、依赖等待、热更新、卸载和 Bundle 安装逐一映射到前面的实验；说明 Cordis 为什么能让插件动态组合、完整撤销和恢复运行。</div>
+        <div class="table-wrap"><table class="compare"><thead><tr><th>实验动作</th><th>看到的结果</th><th>Cordis 原理</th></tr></thead><tbody><tr><td>导出 <code>apply(ctx)</code></td><td>启动时打印日志</td><td>Loader 调用插件入口</td></tr><tr><td>声明 <code>inject</code></td><td>依赖就绪后再运行</td><td>Fiber 等待 Service</td></tr><tr><td><code>tools.register</code></td><td>模型工具集合出现 greet</td><td>能力贡献归属插件生命周期</td></tr><tr><td>保存 Profile patch</td><td>旧实例清理，新实例加载</td><td>Effect 让贡献可以撤销</td></tr><tr><td>安装 <code>.tgz</code></td><td>插件进入 Web Profile</td><td>Bundle Patch 进入组合层</td></tr></tbody></table></div>
+        <div class="section-end">插件不是静态清单：它有依赖、有生命周期、能贡献能力，也能完整撤销。</div>
+      </section>
+
+      <section class="lesson" id="section-3-2">
+        <span class="lesson-no">3.2 · TRACEABLE RUN</span>
+        <h2>3.2 轨迹：Agent 工作过程的完整记录</h2>
+        <h3>3.2.1 一张轨迹图记录了什么</h3>
+        <figure class="figure"><img loading="lazy" src="https://intranetproxy.alipay.com/skylark/lark/0/2026/png/147956511/1787232819539-2c9da5d7-a9d5-4c71-b26f-44aedd15e153.png" alt="Trajectory 页面截图"><div class="image-fallback">原图需要登录后访问。</div><figcaption><span>时间轴划分 Turn，明细按 USER、CONTEXT、SYSTEM、ASSISTANT、TOOL 分类</span><span class="source-badge original">原文截图</span></figcaption></figure>
+        <div class="teach-grid">
+          <div class="teach-card" data-no="U"><span class="tag">USER</span><h4>真实输入</h4><p>用户给 Agent 的问题与指令。</p></div>
+          <div class="teach-card" data-no="C"><span class="tag">CONTEXT</span><h4>上下文注入</h4><p>AGENTS.md、运行环境、权限状态与 Skill 列表。</p></div>
+          <div class="teach-card" data-no="T"><span class="tag">TOOL</span><h4>工具活动</h4><p>调用参数、执行状态与返回结果。</p></div>
+        </div>
+
+        <h3>3.2.2 轨迹日志存在哪里</h3>
+        <div class="code-card"><div class="code-head"><span>SESSION STORAGE</span><button class="copy-code">COPY</button></div><pre><code>~/.dsh/sessions/
+  --项目目录--/
+    session-id/
+      session.jsonl.zstd</code></pre></div>
+        <figure class="figure"><img loading="lazy" src="https://intranetproxy.alipay.com/skylark/lark/0/2026/png/147956511/1787235443317-1fd6a3e2-de5e-4a6c-9e8a-e06f946372e3.png" alt="session 日志目录截图"><div class="image-fallback">原图需要登录后访问。</div><figcaption><span>每个 Session 对应一个独立的压缩事件日志</span><span class="source-badge original">原文截图</span></figcaption></figure>
+
+        <h3>3.2.3 如何查看压缩日志</h3>
+        <div class="code-card"><div class="code-head"><span>TERMINAL</span><button class="copy-code">COPY</button></div><pre><code>zstd -dc ~/.dsh/sessions/&lt;project&gt;/&lt;session-id&gt;/session.jsonl.zstd \
+  | jq .</code></pre></div>
+
+        <h3>3.2.4 为什么 Harness 能渲染这样的轨迹</h3>
+        <figure class="figure"><img loading="lazy" src="https://intranetproxy.alipay.com/skylark/lark/__mermaid_v3/78c4c71b1f78efe69e6b49489afdccb2.svg" alt="Harness 轨迹事件流图"><div class="image-fallback">原图需要登录后访问。</div><figcaption><span>事件一边写入 Session Log，一边投影到 Web 轨迹页面</span><span class="source-badge original">原文图解</span></figcaption></figure>
+        <div class="diagram">
+          <div class="diagram-label"><span>EVENT STREAM → PROJECTION</span><span>讲义示意图 · 非官方</span></div>
+          <svg viewBox="0 0 980 300" role="img" aria-label="Trajectory 事件流与投影示意图">
+            <defs><marker id="arrow4" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#6f8ba5"/></marker></defs>
+            <g font-family="sans-serif"><rect x="26" y="95" width="160" height="100" rx="18" fill="#113956" stroke="#19c7c8"/><text x="106" y="137" text-anchor="middle" fill="#fff" font-size="19" font-weight="700">Agent 运行</text><text x="106" y="166" text-anchor="middle" fill="#8da7bf" font-size="12">输入 · 模型 · 工具</text><path d="M188 145 H280" stroke="#6f8ba5" stroke-width="2" marker-end="url(#arrow4)"/><rect x="292" y="75" width="210" height="140" rx="18" fill="#17304a" stroke="#176bff"/><text x="397" y="125" text-anchor="middle" fill="#fff" font-size="19" font-weight="700">Session Event Log</text><text x="397" y="154" text-anchor="middle" fill="#8da7bf" font-size="12">append-only</text><text x="397" y="178" text-anchor="middle" fill="#8da7bf" font-size="12">session.jsonl.zstd</text><path d="M505 115 H600" stroke="#6f8ba5" stroke-width="2" marker-end="url(#arrow4)"/><path d="M505 178 H600" stroke="#6f8ba5" stroke-width="2" marker-end="url(#arrow4)"/><rect x="612" y="40" width="160" height="94" rx="18" fill="#153929" stroke="#37b878"/><text x="692" y="80" text-anchor="middle" fill="#fff" font-size="18" font-weight="700">实时投影</text><text x="692" y="107" text-anchor="middle" fill="#8de1b5" font-size="12">Trajectory View</text><rect x="612" y="164" width="160" height="94" rx="18" fill="#3b2b12" stroke="#f5cb5c"/><text x="692" y="204" text-anchor="middle" fill="#fff" font-size="18" font-weight="700">重新读取</text><text x="692" y="231" text-anchor="middle" fill="#e9d495" font-size="12">恢复 · 回放 · 分叉</text><path d="M774 87 H866 M774 211 H866" stroke="#6f8ba5" stroke-width="2" marker-end="url(#arrow4)"/><rect x="876" y="96" width="80" height="100" rx="18" fill="#102f4a" stroke="#42617b"/><text x="916" y="137" text-anchor="middle" fill="#fff" font-size="15" font-weight="700">同一份</text><text x="916" y="163" text-anchor="middle" fill="#fff" font-size="15" font-weight="700">轨迹</text></g>
+          </svg>
+        </div>
+      </section>
+
+      <section class="lesson" id="section-3-3">
+        <span class="lesson-no">3.3 · PRESET COMPOSITION</span>
+        <h2>3.3 多模式（官方叫preset）：Agent Preset 如何组装不同能力</h2>
+        <h3>3.3.1 Preset 是什么</h3>
+        <div class="quote">A preset is a directory holding one <code>agent.cordis.yml</code>.<cite>官方源码 · dsh-agent-presets README</cite></div>
+        <p class="lead-line">通俗地说：Preset 是一套给 Session 使用的 Agent 能力组合。</p>
+
+        <h3>3.3.2 一个 Preset 目录里有什么</h3>
+        <div class="code-card"><div class="code-head"><span>my-preset/</span><button class="copy-code">COPY</button></div><pre><code>my-preset/
+├── agent.cordis.yml  # 必需：Plugin 组合
+├── preset.yml        # 可选：名称与说明
+├── local.mjs         # 可选：本地 Plugin
+├── skills/           # 可选：Skills
+└── assets/           # 可选：资源</code></pre></div>
+
+        <h3>3.3.3 <code>agent.cordis.yml</code> 如何定义 Agent 能力</h3>
+        <figure class="figure"><img loading="lazy" src="https://intranetproxy.alipay.com/skylark/lark/0/2026/png/147956511/1787557103085-eb737645-ec19-4781-bd74-953fea6608ac.png" alt="Agent Preset 设置界面"><div class="image-fallback">原图需要登录后访问。</div><figcaption><span>界面中的一个模式，对应磁盘上的一套 Preset 组合</span><span class="source-badge original">原文截图</span></figcaption></figure>
+        <div class="code-card"><div class="code-head"><span>agent.cordis.yml</span><button class="copy-code">COPY</button></div><pre><code>- id: tool-bash
+  name: '@deepseek-ai/dsh-tool-bash'
+
+- id: tool-web
+  name: '@deepseek-ai/dsh-tool-web'
+  config:
+    fetch: false</code></pre></div>
+
+        <h3>3.3.4 Agent Preset 与 Host Composition 如何分工</h3>
+        <div class="diagram">
+          <div class="diagram-label"><span>HOST vs AGENT</span><span>讲义示意图 · 非官方</span></div>
+          <svg viewBox="0 0 980 400" role="img" aria-label="Host Composition 与 Agent Preset 分工">
+            <defs><marker id="arrow5" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#6f8ba5"/></marker></defs>
+            <rect x="48" y="44" width="380" height="270" rx="24" fill="#102f4a" stroke="#19c7c8"/><text x="238" y="91" text-anchor="middle" fill="#fff" font-family="sans-serif" font-size="25" font-weight="700">Host Composition</text><text x="238" y="122" text-anchor="middle" fill="#79adc0" font-family="monospace" font-size="11">PROCESS-SHARED INFRASTRUCTURE</text><g fill="#dce9f5" font-family="sans-serif" font-size="15"><text x="88" y="165">• 工具与提示词注册表</text><text x="88" y="198">• Agent Factory / Agent Loop</text><text x="88" y="231">• Model Route / Session 持久化</text><text x="88" y="264">• Sandbox / Permission / Approval</text></g>
+            <rect x="552" y="44" width="380" height="270" rx="24" fill="#17304a" stroke="#176bff"/><text x="742" y="91" text-anchor="middle" fill="#fff" font-family="sans-serif" font-size="25" font-weight="700">Agent Preset</text><text x="742" y="122" text-anchor="middle" fill="#8faee5" font-family="monospace" font-size="11">PER-SESSION CONTRIBUTIONS</text><g fill="#dce9f5" font-family="sans-serif" font-size="15"><text x="592" y="165">• Persona 与提示词</text><text x="592" y="198">• 模型可见工具</text><text x="592" y="231">• Skills / Plan Mode</text><text x="592" y="264">• Subagent 调用与 Agent 行为</text></g>
+            <path d="M430 180 H542" stroke="#6f8ba5" stroke-width="2" marker-end="url(#arrow5)"/><text x="486" y="166" text-anchor="middle" fill="#8da7bf" font-family="monospace" font-size="11">REGISTRY</text><rect x="350" y="344" width="280" height="42" rx="21" fill="#153929" stroke="#37b878"/><text x="490" y="371" text-anchor="middle" fill="#fff" font-family="sans-serif" font-size="15" font-weight="700">Session 选择 Preset 后获得能力</text>
+          </svg>
+        </div>
+
+        <h3>3.3.5 官方四种内置模式有什么区别</h3>
+        <figure class="figure"><img loading="lazy" src="https://intranetproxy.alipay.com/skylark/lark/0/2026/png/147956511/1787294008919-adc8491f-9ae0-4741-8ecc-a3b85b248112.png" alt="官方四种内置 Preset 目录"><div class="image-fallback">原图需要登录后访问。</div><figcaption><span>四种模式位于 apps/cli/config/agent-presets</span><span class="source-badge original">原文截图</span></figcaption></figure>
+        <div class="figure-grid">
+          <figure class="figure"><img loading="lazy" src="https://intranetproxy.alipay.com/skylark/lark/0/2026/png/147956511/1787238559188-d29bb3f7-33b1-450c-b6b1-984443aca172.png" alt="Standard preset 目录"><div class="image-fallback">原图需要登录后访问。</div><figcaption><span>Standard</span><span class="source-badge original">原文截图</span></figcaption></figure>
+          <figure class="figure"><img loading="lazy" src="https://intranetproxy.alipay.com/skylark/lark/0/2026/png/147956511/1787238486524-7b82d5b4-7070-45be-845f-b5169044aa2f.png" alt="Code preset 目录"><div class="image-fallback">原图需要登录后访问。</div><figcaption><span>Code / PTC</span><span class="source-badge original">原文截图</span></figcaption></figure>
+          <figure class="figure"><img loading="lazy" src="https://intranetproxy.alipay.com/skylark/lark/0/2026/png/147956511/1787238547489-16e5cbae-3396-46df-8028-93b6991f0e0e.png" alt="Minimal preset 目录"><div class="image-fallback">原图需要登录后访问。</div><figcaption><span>Minimal</span><span class="source-badge original">原文截图</span></figcaption></figure>
+          <figure class="figure"><img loading="lazy" src="https://intranetproxy.alipay.com/skylark/lark/0/2026/png/147956511/1787238455687-3bdf469f-2c73-432e-b006-e7fb41ddbf73.png" alt="Cordis preset 目录"><div class="image-fallback">原图需要登录后访问。</div><figcaption><span>Cordis / Creator</span><span class="source-badge original">原文截图</span></figcaption></figure>
+        </div>
+        <div class="table-wrap"><table class="compare"><thead><tr><th>项目</th><th>Standard</th><th>Code / PTC</th><th>Minimal</th><th>Creator</th></tr></thead><tbody><tr><td>工具呈现</td><td>Native，多工具</td><td>主要呈现 run_code</td><td>Native，两个工具</td><td>Native，多工具</td></tr><tr><td>Skills</td><td>项目与用户 Skills</td><td>同 Standard</td><td>无 Skill 工具</td><td>Standard + 2 个 Cordis Skill</td></tr><tr><td>Plan / Subagent</td><td>有 / 有</td><td>有 / 有</td><td>无 / 无</td><td>有 / 有</td></tr><tr><td>主要用途</td><td>日常开发</td><td>程序化工具调用</td><td>最小环境</td><td>创建 Plugin 与 Preset</td></tr></tbody></table></div>
+
+        <h4>Standard：标准模式</h4><p class="lead-line">完整工具组合，动态组装项目指令、Skills、会话状态与 Host 提示词。</p>
+        <h4>Code / PTC：程序化工具调用模式</h4>
+        <figure class="figure"><img loading="lazy" src="https://intranetproxy.alipay.com/skylark/lark/0/2026/png/147956511/1787293831265-781db006-8702-4790-ad22-22d910f197ca.png" alt="PTC mode code 配置说明"><div class="image-fallback">原图需要登录后访问。</div><figcaption><span><code>mode: code</code> 改变工具如何呈现给模型，并不删除底层工具</span><span class="source-badge original">原文截图</span></figcaption></figure>
+        <h4>Minimal：极简模式</h4><p class="lead-line">固定提示词，只保留持久 Bash 与 <code>str_replace_editor</code>。</p>
+        <h4>Cordis / Creator：创造模式</h4><p class="lead-line">保留 Standard 能力，再增加运行时检查、插件开发和组合编辑指导。</p>
+
+        <h3>3.3.6 安装一个社区 Preset</h3>
+        <figure class="figure"><img loading="lazy" src="https://intranetproxy.alipay.com/skylark/lark/0/2026/png/147956511/1787232824268-2f532a1c-7561-4afd-ab90-87ec5ee81fd5.png" alt="安装社区 dsh-plans Preset"><div class="image-fallback">原图需要登录后访问。</div><figcaption><span>社区 Preset 示例：dsh-plans</span><span class="source-badge original">原文截图</span></figcaption></figure>
+        <div class="steps"><div class="step"><div><strong>创建目录</strong><span><code>mkdir -p ~/.dsh/.agent-presets</code></span></div></div><div class="step"><div><strong>克隆 Preset</strong><span><code>git clone ... ~/.dsh/.agent-presets/dsh-plans</code></span></div></div><div class="step"><div><strong>新建会话</strong><span>在模式列表中选择新安装的 Preset。</span></div></div></div>
+        <div class="section-end">Preset 决定一个 Session 使用哪些能力；Host Composition 提供进程共享基础设施。</div>
+      </section>
+    </article>
+
+    <article class="chapter" id="chapter-4">
+      <header class="chapter-heading">
+        <span class="chapter-index">04</span>
+        <div class="chapter-kicker">Community landscape</div>
+        <h1>四、社区生态现状</h1>
+        <div class="chapter-goal">区分插件市场、Plugin、Bundle 与 Agent Preset，并用快照数据观察社区方向。</div>
+      </header>
+
+      <section class="lesson" id="section-4-1">
+        <span class="lesson-no">4.1 · MARKET</span>
+        <h2>4.1 社区插件市场</h2>
+        <div class="teach-grid">
+          <a class="teach-card" data-no="M" href="https://github.com/dsh-market/dsh-market" target="_blank" rel="noreferrer"><span class="tag">Web Plugin</span><h3>DSH Market</h3><p>在 DSH 中浏览、搜索和安装社区插件。</p></a>
+          <a class="teach-card" data-no="A" href="https://github.com/awesome-dsh-plugin/awesome-dsh-plugin" target="_blank" rel="noreferrer"><span class="tag">Directory</span><h3>Awesome DSH Plugin</h3><p>社区维护的插件分类和推荐列表。</p></a>
+          <a class="teach-card" data-no="F" href="https://dshfind.com/zh/plugins" target="_blank" rel="noreferrer"><span class="tag">Search</span><h3>DSH Find</h3><p>面向普通用户的 Web 插件浏览入口。</p></a>
+        </div>
+      </section>
+
+      <section class="lesson" id="section-4-2">
+        <span class="lesson-no">4.2 · STAR SNAPSHOT</span>
+        <h2>4.2 高 Star 社区插件排行</h2>
+        <p class="lead-line">这是 2026 年 8 月 20 日的快照，不是长期排名。</p>
+        <div class="bars" aria-label="社区插件 Star 排行条形图">
+          <div class="bar"><span>dsh-web-ui</span><div class="bar-track"><div class="bar-fill" style="--w:100%"></div></div><b>5,122</b></div>
+          <div class="bar"><span>dsh-anchored-standard</span><div class="bar-track"><div class="bar-fill" style="--w:72%"></div></div><b>3,672</b></div>
+          <div class="bar"><span>modlens</span><div class="bar-track"><div class="bar-fill" style="--w:66%"></div></div><b>3,384</b></div>
+          <div class="bar"><span>DSH Better Sidebar</span><div class="bar-track"><div class="bar-fill" style="--w:48%"></div></div><b>2,442</b></div>
+          <div class="bar"><span>dsh-TUI</span><div class="bar-track"><div class="bar-fill" style="--w:42%"></div></div><b>2,170</b></div>
+          <div class="bar"><span>dsh-deep-whale</span><div class="bar-track"><div class="bar-fill" style="--w:29%"></div></div><b>1,504</b></div>
+          <div class="bar"><span>dsh-market</span><div class="bar-track"><div class="bar-fill" style="--w:27%"></div></div><b>1,404</b></div>
+        </div>
+        <details><summary>展开完整 Top 10</summary><div>8. dsh-vision-router — 890<br>9. tongflow — 887<br>10. dsh-vision-toolkit — 783<br><br>排行纳入可验证的 Cordis Plugin、DSH Bundle 与 Agent Preset；不纳入独立桌面客户端、通用 Skill/MCP。</div></details>
+      </section>
+
+      <section class="lesson" id="section-4-3">
+        <span class="lesson-no">4.3 · PRESET PLAYGROUND</span>
+        <h2>4.3 好玩的preset运行模式（截止到26年8月20日）</h2>
+        <div class="teach-grid">
+          <div class="teach-card" data-no="1"><span class="tag">Trajectory</span><h3>dsh-anchored-standard</h3><p>先锚定初始推理轨迹，再逐步开放 Standard 工具。</p></div>
+          <div class="teach-card" data-no="2"><span class="tag">Windows</span><h3>dsh-gitbash-preset</h3><p>在 Windows 环境为 Minimal 模式补充 Git Bash 支持。</p></div>
+          <div class="teach-card" data-no="3"><span class="tag">Planning</span><h3>dsh-plans</h3><p>调查 → 计划 → 评审 → 用户确认 → Goal 执行。</p></div>
+          <div class="teach-card" data-no="4"><span class="tag">Multi-agent</span><h3>software-OPC</h3><p>用多部门角色模拟软件公司协作流程。</p></div>
+          <div class="teach-card" data-no="5"><span class="tag">Routing</span><h3>dsh-router-flash</h3><p>面向特定模型的路由与工具组合实验。</p></div>
+        </div>
+        <div class="quote">社区最活跃的方向，不只是“增加一个工具”，而是在重组 Agent 的工作方式。<cite>讲义归纳 · 基于 2026-08-20 社区快照</cite></div>
+      </section>
+    </article>
+
+    <footer class="page-footer">
+      <strong>资料来源</strong><br>
+      原始语雀文档：<a href="https://yuque.antfin.com/cowork/eety51/yvy0qlgdqwqxnfx9" target="_blank" rel="noreferrer">从官方资料和实践解读deepseek harness ↗</a><br>
+      官方入口：<a href="https://www.deepseek.com/harness/" target="_blank" rel="noreferrer">DeepSeek Harness</a> · <a href="https://github.com/deepseek-ai/deepseek-harness" target="_blank" rel="noreferrer">GitHub</a> · <a href="https://deepseek-harness.github.io/deepseek-harness/" target="_blank" rel="noreferrer">官方文档</a> · <a href="https://github.com/cordiverse/paper" target="_blank" rel="noreferrer">Cordis 论文</a><br><br>
+      本讲义保留语雀和官网图片的原始远程地址。所有标记为“讲义示意图 · 非官方”的图解仅用于教学说明。
+    </footer>
+  </main>
+
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="图片预览">
+    <button type="button" aria-label="关闭图片预览">×</button>
+    <img alt="放大的讲义图片">
+  </div>
+
+  <script>
+    const progress = document.querySelector('#progress')
+    const sidebar = document.querySelector('#sidebar')
+    const menu = document.querySelector('#menu')
+    const tocLinks = [...document.querySelectorAll('.toc a')]
+    const tocTargets = tocLinks.map(link => document.querySelector(link.hash)).filter(Boolean)
+    const lightbox = document.querySelector('#lightbox')
+    const lightboxImage = lightbox.querySelector('img')
+
+    function updateProgress() {
+      const range = document.documentElement.scrollHeight - innerHeight
+      progress.style.width = `${range > 0 ? scrollY / range * 100 : 0}%`
+    }
+
+    function updateActiveToc() {
+      const marker = innerHeight * .28
+      let activeTarget = tocTargets[0]
+      tocTargets.forEach(target => {
+        if (target.getBoundingClientRect().top <= marker) activeTarget = target
+      })
+      const activeLink = tocLinks.find(link => link.hash === `#${activeTarget.id}`)
+      if (!activeLink) return
+      tocLinks.forEach(link => {
+        const isActive = link === activeLink
+        link.classList.toggle('active', isActive)
+        if (isActive) link.setAttribute('aria-current', 'location')
+        else link.removeAttribute('aria-current')
+      })
+      const group = activeLink.closest('.toc-group')
+      if (group) group.open = true
+    }
+
+    function updateScrollState() {
+      updateProgress()
+      updateActiveToc()
+    }
+
+    addEventListener('scroll', updateScrollState, { passive: true })
+    updateProgress()
+    updateActiveToc()
+
+    menu.addEventListener('click', () => sidebar.classList.toggle('open'))
+    tocLinks.forEach(link => link.addEventListener('click', () => sidebar.classList.remove('open')))
+
+    document.querySelectorAll('.figure img').forEach(image => {
+      image.addEventListener('error', () => image.closest('.figure').classList.add('failed'))
+      image.addEventListener('click', () => {
+        lightboxImage.src = image.currentSrc || image.src
+        lightboxImage.alt = image.alt
+        lightbox.classList.add('open')
+        document.body.style.overflow = 'hidden'
+      })
+    })
+
+    function closeLightbox() {
+      lightbox.classList.remove('open')
+      document.body.style.overflow = ''
+    }
+
+    lightbox.querySelector('button').addEventListener('click', closeLightbox)
+    lightbox.addEventListener('click', event => { if (event.target === lightbox) closeLightbox() })
+    addEventListener('keydown', event => { if (event.key === 'Escape') closeLightbox() })
+
+    document.querySelectorAll('.copy-code').forEach(button => {
+      button.addEventListener('click', async () => {
+        const code = button.closest('.code-card').querySelector('code').textContent
+        await navigator.clipboard.writeText(code)
+        button.textContent = 'COPIED'
+        setTimeout(() => { button.textContent = 'COPY' }, 1400)
+      })
+    })
+  </script>
+</body>
+</html>
